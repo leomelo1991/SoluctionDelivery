@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { ArrowUpRight, MapPin, PackageCheck } from 'lucide-react';
 import type { Delivery, Stage, User } from '@solution/contracts';
 import { dateTime, formatAddress, mapsLink, money, stageLabels } from '@solution/contracts';
 import { Button, Card, Empty, ErrorState, Loading, Modal, Status } from '@solution/ui';
 import { AsyncSelect } from './AsyncSelect';
 import { useAction, useData } from '../lib/query';
+import { useDraftState } from '../lib/drafts';
 export function DeliveryStatus({ status }: { status: Stage }) {
   return (
     <Status tone={status === 'delivered' ? 'positive' : 'neutral'}>{stageLabels[status]}</Status>
@@ -52,8 +52,11 @@ export function DeliveryDetails({
 }) {
   const query = useData<Delivery>('/deliveries/' + id);
   const action = useAction();
-  const [courierId, setCourier] = useState('');
-  const [reason, setReason] = useState('');
+  const [courierId, setCourier] = useDraftState(`delivery:${id}:courier`, '');
+  const [reason, setReason] = useDraftState(
+    `delivery:${id}:${query.data?.status ?? 'loading'}:reason`,
+    '',
+  );
   const d = query.data;
   const execute = async (name: string) => {
     if (!d) return;
@@ -65,6 +68,8 @@ export function DeliveryDetails({
         ...(user.role === 'admin' && name !== 'assign' ? { reason } : {}),
       },
     });
+    if (name === 'assign') setCourier('');
+    else setReason('');
   };
   const next =
     d?.status === 'accepted'
@@ -123,6 +128,7 @@ export function DeliveryDetails({
               <div className="stack">
                 <label htmlFor="assign-courier">Entregador disponível</label>
                 <AsyncSelect
+                  draftKey={`delivery:${id}:courier:search`}
                   id="assign-courier"
                   label="Entregador disponível"
                   source="/couriers?approvalStatus=approved&availabilityStatus=available"

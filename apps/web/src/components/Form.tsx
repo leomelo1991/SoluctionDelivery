@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@solution/ui';
 import { AsyncSelect } from './AsyncSelect';
+import { clearDraft, readDraft, useDraftKey, writeDraft } from '../lib/drafts';
 export interface FormField {
   name: string;
   label: string;
@@ -60,6 +62,9 @@ export function Form({
   busy = false,
   onDirty,
   children,
+  draftKey,
+  clearDraftOnSubmit = true,
+  persistAnonymous = false,
 }: {
   fields: FormField[];
   initial?: object;
@@ -68,17 +73,27 @@ export function Form({
   busy?: boolean;
   onDirty?: () => void;
   children?: React.ReactNode;
+  draftKey?: string;
+  clearDraftOnSubmit?: boolean;
+  persistAnonymous?: boolean;
 }) {
+  const scopedKey = useDraftKey(draftKey ?? '', persistAnonymous);
+  const storageKey = draftKey ? scopedKey : null;
+  const draft = storageKey ? readDraft<Record<string, string>>(storageKey, {}) : {};
   const defaults = Object.fromEntries(
     fields.map((f) => {
       const raw = (initial as Record<string, unknown>)[f.name] ?? f.default ?? '';
       return [
         f.name,
-        String(
-          typeof raw === 'number'
-            ? raw / (['money', 'percent'].includes(f.kind ?? '') ? 100 : f.kind === 'km' ? 1000 : 1)
-            : raw,
-        ),
+        (f.kind !== 'password' && typeof draft?.[f.name] === 'string'
+          ? draft[f.name]
+          : undefined) ??
+          String(
+            typeof raw === 'number'
+              ? raw /
+                  (['money', 'percent'].includes(f.kind ?? '') ? 100 : f.kind === 'km' ? 1000 : 1)
+              : raw,
+          ),
       ];
     }),
   );
@@ -89,10 +104,25 @@ export function Form({
     handleSubmit,
     formState: { errors, isSubmitting },
     setError,
+    watch,
   } = useForm<Record<string, string>, unknown, Values>({
     resolver: zodResolver(schema),
     defaultValues: defaults,
   });
+  useEffect(() => {
+    if (!storageKey) return;
+    const subscription = watch((values) => {
+      writeDraft(
+        storageKey,
+        Object.fromEntries(
+          fields
+            .filter((field) => field.kind !== 'password')
+            .map((field) => [field.name, values[field.name] ?? '']),
+        ),
+      );
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, storageKey, fields]);
   return (
     <form
       className="form-grid"
@@ -100,6 +130,7 @@ export function Form({
       onSubmit={handleSubmit(async (values) => {
         try {
           await onSubmit(values);
+          if (storageKey && clearDraftOnSubmit) clearDraft(storageKey);
         } catch (e) {
           setError('root', { message: e instanceof Error ? e.message : 'Falha ao salvar.' });
         }
@@ -117,6 +148,7 @@ export function Form({
                   id={`f-${f.name}`}
                   label={f.label}
                   source={f.source!}
+                  draftKey={draftKey ? `${draftKey}:${f.name}:search` : undefined}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 />

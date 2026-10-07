@@ -12,6 +12,7 @@ import * as Crypto from 'expo-crypto';
 import type { MobileSession, User } from '@solution/contracts';
 import { ApiClient, ApiError } from './client';
 import { ErrorNotice, Loading, Screen } from '../components/ui';
+import { MobileDraftProvider, clearMobileDrafts } from './drafts';
 const storageKey = 'solution.courier.session.v1';
 interface Auth {
   user: User | null;
@@ -33,10 +34,13 @@ export function SessionProvider({ url, children }: PropsWithChildren<{ url: stri
   const [attempt, setAttempt] = useState(0);
   const clear = useCallback(() => {
     setSession(null);
+    void clearMobileDrafts(url).catch(() =>
+      setError('Não foi possível remover os rascunhos do dispositivo.'),
+    );
     void SecureStore.deleteItemAsync(storageKey).catch(() =>
       setError('Não foi possível remover a sessão do dispositivo. Tente novamente.'),
     );
-  }, []);
+  }, [url]);
   const client = useMemo(
     () =>
       new ApiClient(url, {
@@ -114,6 +118,7 @@ export function SessionProvider({ url, children }: PropsWithChildren<{ url: stri
   const logout = async () => {
     await client.request('/auth/logout', 'POST');
     await SecureStore.deleteItemAsync(storageKey);
+    await clearMobileDrafts(url);
     setSession(null);
   };
   const refreshUser = async () => {
@@ -134,7 +139,12 @@ export function SessionProvider({ url, children }: PropsWithChildren<{ url: stri
     );
   return (
     <Context.Provider value={{ user: session?.user ?? null, client, login, logout, refreshUser }}>
-      {children}
+      <MobileDraftProvider
+        url={url}
+        actor={session ? `${session.user.tenantId}:${session.user.id}` : 'access'}
+      >
+        {children}
+      </MobileDraftProvider>
     </Context.Provider>
   );
 }

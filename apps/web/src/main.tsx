@@ -20,6 +20,7 @@ import { Brand, Button, Card, Loading, ErrorState } from '@solution/ui';
 import { api, ApiError, setSession } from './lib/api';
 import { NoticeContext, ActorContext, actorScope } from './lib/query';
 import { Form } from './components/Form';
+import { clearDrafts } from './lib/drafts';
 const Operations = lazy(() =>
   import('./pages/Operations').then((m) => ({ default: m.Operations })),
 );
@@ -41,6 +42,7 @@ const client = new QueryClient({
 async function signOut() {
   await api('/auth/logout', 'POST');
   setSession(null);
+  clearDrafts();
   client.clear();
   window.location.assign('/login');
 }
@@ -126,6 +128,8 @@ function Login({ onLogin }: { onLogin: (user: User) => void }) {
         </div>
         <p className="muted">Use os dados fornecidos pelo administrador.</p>
         <Form
+          draftKey="access"
+          persistAnonymous
           fields={[
             { name: 'tenant', label: 'Identificador da empresa', min: 2, max: 80 },
             { name: 'email', label: 'E-mail', kind: 'email' },
@@ -285,6 +289,7 @@ function Application() {
     const expire = () => {
       client.clear();
       setSession(null);
+      clearDrafts();
       window.location.assign('/login');
     };
     const online = () => {
@@ -448,9 +453,12 @@ function Application() {
                       <Route path="/admin/entregas" element={<Operations user={u} />} />
                       <Route
                         path="/admin/estabelecimentos"
-                        element={<Directory kind="establishments" />}
+                        element={<Directory key="establishments" kind="establishments" />}
                       />
-                      <Route path="/admin/entregadores" element={<Directory kind="couriers" />} />
+                      <Route
+                        path="/admin/entregadores"
+                        element={<Directory key="couriers" kind="couriers" />}
+                      />
                       <Route path="/admin/usuarios" element={<Users user={u} />} />
                       <Route path="/admin/precos" element={<PricingPage />} />
                       <Route path="/admin/auditoria" element={<Audit />} />

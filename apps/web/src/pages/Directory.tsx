@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDraftState } from '../lib/drafts';
 import { Plus, Search } from 'lucide-react';
 import type { Courier, Establishment, Page, User } from '@solution/contracts';
 import { dateTime, formatAddress, labels, money, stageLabels } from '@solution/contracts';
@@ -25,8 +26,8 @@ const courierFields: FormField[] = [
   },
 ];
 export function Directory({ kind }: { kind: 'establishments' | 'couriers' }) {
-  const [q, setQ] = useState('');
-  const [filter, setFilter] = useState('');
+  const [q, setQ] = useDraftState(`directory:${kind}:search`, '');
+  const [filter, setFilter] = useDraftState(`directory:${kind}:filter`, '');
   const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
@@ -173,6 +174,7 @@ export function Directory({ kind }: { kind: 'establishments' | 'couriers' }) {
           onClose={() => setCreating(false)}
         >
           <Form
+            draftKey={`directory:${kind}:create`}
             fields={stores ? storeFields : courierFields}
             busy={action.isPending}
             onSubmit={async (v) => {
@@ -198,7 +200,7 @@ function EstablishmentProfile({ id, onClose }: { id: string; onClose: () => void
   const query = useData<Establishment>('/establishments/' + id);
   const action = useAction();
   const [editing, setEditing] = useState(false);
-  const [note, setNote] = useState('');
+  const [note, setNote] = useDraftState(`establishment:${id}:note`, '');
   const e = query.data;
   return (
     <Modal title={e?.name ?? 'Perfil do estabelecimento'} open onClose={onClose}>
@@ -221,6 +223,7 @@ function EstablishmentProfile({ id, onClose }: { id: string; onClose: () => void
           </div>
           {editing ? (
             <Form
+              draftKey={`establishment:${id}:edit`}
               fields={storeFields}
               initial={{ ...e, ...e.address }}
               onSubmit={async (v) => {
@@ -411,10 +414,10 @@ function CourierProfile({ id, onClose }: { id: string; onClose: () => void }) {
 }
 export function Users({ user }: { user: User }) {
   const [page, setPage] = useState(1);
-  const [q, setQ] = useState('');
+  const [q, setQ] = useDraftState('users:search', '');
   const [creating, setCreating] = useState(false);
   const [reset, setReset] = useState<User | null>(null);
-  const [role, setRole] = useState('admin');
+  const [role, setRole] = useDraftState('users:create:role', 'admin');
   const query = useData<Page<User>>('/users' + params({ page, q }));
   const action = useAction();
   const fields: FormField[] = [
@@ -546,6 +549,7 @@ export function Users({ user }: { user: User }) {
             </select>
           </div>
           <Form
+            draftKey={`users:create:${role}`}
             key={role}
             fields={fields}
             onSubmit={async (v) => {

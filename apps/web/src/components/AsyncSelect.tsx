@@ -2,20 +2,23 @@ import { useState } from 'react';
 import type { Page } from '@solution/contracts';
 import { Button } from '@solution/ui';
 import { useData } from '../lib/query';
+import { useDraftState } from '../lib/drafts';
 export function AsyncSelect({
   id,
   label,
   source,
   value,
   onChange,
+  draftKey,
 }: {
   id: string;
   label: string;
   source: string;
   value: string;
   onChange: (value: string) => void;
+  draftKey?: string;
 }) {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useDraftState(draftKey ?? null, '');
   const [page, setPage] = useState(1);
   const [chosen, setChosen] = useState<{ id: string; name: string } | null>(null);
   const query = useData<Page<{ id: string; name: string }>>(

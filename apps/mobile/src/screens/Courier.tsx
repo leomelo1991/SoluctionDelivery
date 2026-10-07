@@ -24,6 +24,7 @@ import { Confirm } from '../components/Confirm';
 import { useAction, useData } from '../core/queries';
 import { useSession } from '../core/session';
 import { historyPeriod } from '../core/delivery';
+import { useMobileDraft } from '../core/drafts';
 type Tab = 'home' | 'history' | 'account';
 interface Command {
   path: string;
@@ -40,9 +41,11 @@ export function CourierHome() {
   const [command, setCommand] = useState<Command | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [signingOut, setSigningOut] = useState(false);
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(today);
-  const [period, setPeriod] = useState(() => historyPeriod(today(), today()));
+  const [from, setFrom] = useMobileDraft('historyFrom', today);
+  const [to, setTo] = useMobileDraft('historyTo', today);
+  const [period, setPeriod] = useMobileDraft('historyPeriod', () =>
+    historyPeriod(today(), today()),
+  );
   const foreground = useForeground();
   const courier = useData<Courier>('/couriers/me', foreground, 20000);
   const offers = useData<Page<Offer>>('/couriers/me/offers?page=1&pageSize=30', foreground, 5000);

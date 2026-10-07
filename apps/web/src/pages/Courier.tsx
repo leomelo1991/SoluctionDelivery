@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDraftState } from '../lib/drafts';
 import { ArrowUpRight, MapPin } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 import type { Courier, Dashboard, Delivery, Offer, Page, User } from '@solution/contracts';
@@ -27,8 +28,8 @@ export function CourierApp({ user }: { user: User }) {
   const [page, setPage] = useState(1);
   const [accept, setAccept] = useState<Offer | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(today);
+  const [from, setFrom] = useDraftState('courier:from', today);
+  const [to, setTo] = useDraftState('courier:to', today);
   const period = {
     from: from ? new Date(`${from}T00:00:00-03:00`).toISOString() : undefined,
     to: to ? new Date(`${to}T23:59:59-03:00`).toISOString() : undefined,

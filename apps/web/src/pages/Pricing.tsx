@@ -359,6 +359,7 @@ export function PricingPage() {
           Mapbox e Google Maps são usados para cotar o percurso, sem rastreamento do entregador.
         </p>
         <Form
+          draftKey="pricing:routing"
           key={JSON.stringify(p.routing)}
           fields={[
             {
@@ -408,6 +409,7 @@ export function PricingPage() {
           }}
         >
           <Form
+            draftKey={`pricing:${modal}:${region?.id ?? extra?.id ?? 'new'}`}
             fields={
               modal === 'formula'
                 ? [...formulaFields('fee', 'Cobrança'), ...formulaFields('payout', 'Remuneração')]

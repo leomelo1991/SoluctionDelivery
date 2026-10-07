@@ -132,6 +132,8 @@ export function CreateDelivery({ user, onClose }: { user: User; onClose: () => v
       onClose={onClose}
     >
       <Form
+        draftKey="delivery:create"
+        clearDraftOnSubmit={quote !== null}
         fields={fields}
         onSubmit={submit}
         submitLabel={quote ? 'Confirmar e criar entrega' : 'Calcular e revisar frete'}

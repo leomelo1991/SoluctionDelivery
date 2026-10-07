@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform } from 'react-native';
 import { useSession } from '../core/session';
 import { Button, Card, Copy, ErrorNotice, Field, Screen } from '../components/ui';
+import { useMobileDraft } from '../core/drafts';
 export function Access() {
   const { login } = useSession();
-  const [tenant, setTenant] = useState('');
-  const [email, setEmail] = useState('');
+  const [tenant, setTenant] = useMobileDraft('tenant');
+  const [email, setEmail] = useMobileDraft('email');
   const [password, setPassword] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDraftState } from '../lib/drafts';
 import { Plus, Search } from 'lucide-react';
 import type { Dashboard, Delivery, Establishment, Page, User } from '@solution/contracts';
 import { money, dateTime, today } from '@solution/contracts';
@@ -8,14 +9,14 @@ import { params } from '../lib/api';
 import { CreateDelivery } from '../components/CreateDelivery';
 import { DeliveryBoard, DeliveryDetails, DeliveryStatus } from '../components/Delivery';
 export function Operations({ user, overview = false }: { user: User; overview?: boolean }) {
-  const [view, setView] = useState('active');
-  const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('');
+  const [view, setView] = useDraftState('operations:view', 'active');
+  const [search, setSearch] = useDraftState('operations:search', '');
+  const [status, setStatus] = useDraftState('operations:status', '');
   const [page, setPage] = useState(1);
   const [creating, setCreating] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
-  const [from, setFrom] = useState(today);
-  const [to, setTo] = useState(today);
+  const [from, setFrom] = useDraftState('operations:from', today);
+  const [to, setTo] = useDraftState('operations:to', today);
   const period = {
     from: from ? new Date(`${from}T00:00:00-03:00`).toISOString() : undefined,
     to: to ? new Date(`${to}T23:59:59-03:00`).toISOString() : undefined,
