@@ -12,7 +12,7 @@ import {
 import { APP_FILTER, APP_GUARD, NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
-import helmet from 'helmet';
+import helmetModule from 'helmet';
 import { randomUUID } from 'node:crypto';
 import type { Request, Response, NextFunction } from 'express';
 import { Database } from './database.js';
@@ -89,6 +89,10 @@ class DashboardModule {}
   ],
 })
 export class AppModule {}
+// O builder NestJS da Vercel resolve os tipos do helmet como módulo, não como função.
+type HelmetFactory = () => (req: Request, res: Response, next: NextFunction) => void;
+const helmet = ((helmetModule as unknown as { default?: HelmetFactory }).default ??
+  helmetModule) as unknown as HelmetFactory;
 export async function createApplication() {
   const app = await NestFactory.create(AppModule, { logger: ['log', 'warn', 'error'] });
   app.setGlobalPrefix('api/v1');
