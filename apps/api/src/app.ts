@@ -135,3 +135,19 @@ export async function createApplication() {
   app.enableShutdownHooks();
   return { app, document };
 }
+
+// Entrada para Vercel Functions: o builder NestJS espera um export default invocável.
+type NodeHandler = (req: Request, res: Response) => void;
+let vercelHandler: Promise<NodeHandler> | undefined;
+export default async function handler(req: Request, res: Response) {
+  vercelHandler ??= createApplication()
+    .then(async ({ app }) => {
+      await app.init();
+      return app.getHttpAdapter().getInstance() as NodeHandler;
+    })
+    .catch((error: unknown) => {
+      vercelHandler = undefined;
+      throw error;
+    });
+  return (await vercelHandler)(req, res);
+}
