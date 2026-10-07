@@ -1,0 +1,10 @@
+node_modules
+**/dist
+**/generated
+referencias
+diversos
+pnpm-lock.yaml
+packages/contracts/openapi.json
+packages/contracts/src/api.generated.ts
+playwright-report
+test-results

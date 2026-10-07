@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: solution
+      POSTGRES_USER: solution
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD}
+    ports: ['127.0.0.1:55433:5432']
+    volumes: ['postgres_data:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U solution -d solution']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server', '--appendonly', 'yes']
+    ports: ['127.0.0.1:56380:6379']
+    volumes: ['redis_data:/data']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  migrate:
+    build: { context: ., dockerfile: apps/api/Dockerfile, target: migration }
+    command:
+      [
+        'node',
+        'apps/api/node_modules/prisma/build/index.js',
+        'migrate',
+        'deploy',
+        '--config',
+        'apps/api/prisma.config.ts',
+      ]
+    environment:
+      DATABASE_URL: postgresql://solution:${DB_PASSWORD}@postgres:5432/solution
+    depends_on:
+      postgres: { condition: service_healthy }
+    profiles: ['app']
+  api:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://solution:${DB_PASSWORD}@postgres:5432/solution
+      REDIS_URL: redis://redis:6379
+      APP_ORIGIN: http://localhost:8080
+      MAPBOX_TOKEN: ${MAPBOX_TOKEN:-}
+      GOOGLE_MAPS_KEY: ${GOOGLE_MAPS_KEY:-}
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      migrate: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://localhost:3000/api/v1/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    profiles: ['app']
+  web:
+    build: { context: ., dockerfile: apps/web/Dockerfile }
+    ports: ['8080:8080']
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+    profiles: ['app']
+volumes:
+  postgres_data:
+  redis_data:

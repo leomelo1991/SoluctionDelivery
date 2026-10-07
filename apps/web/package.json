@@ -1,0 +1,34 @@
+{
+  "name": "@solution/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router-dom": "7.18.4",
+    "@tanstack/react-query": "5.104.1",
+    "react-hook-form": "7.89.0",
+    "@hookform/resolvers": "5.9.1",
+    "zod": "4.6.5",
+    "lucide-react": "0.562.0",
+    "@radix-ui/react-dialog": "1.1.23",
+    "@solution/ui": "workspace:*",
+    "@solution/contracts": "workspace:*",
+    "@fontsource/manrope": "5.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "vite": "7.3.6",
+    "@vitejs/plugin-react": "5.2.0",
+    "openapi-typescript": "7.13.0"
+  },
+  "engines": {
+    "node": "24.x"
+  }
+}

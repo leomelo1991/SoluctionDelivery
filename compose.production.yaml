@@ -1,0 +1,10 @@
+services:
+  api:
+    environment:
+      NODE_ENV: production
+      APP_ORIGIN: ${APP_ORIGIN:?Defina a origem HTTPS}
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: ['no-new-privileges:true']
+  web:
+    security_opt: ['no-new-privileges:true']

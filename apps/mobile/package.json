@@ -1,0 +1,38 @@
+{
+  "name": "@solution/mobile",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "build": "expo export --platform android --platform ios --max-workers 2",
+    "typecheck": "tsc --noEmit",
+    "check": "expo install --check",
+    "test": "node --import tsx --test --test-isolation=none test/*.test.ts",
+    "remote": "node scripts/start-remote.mjs"
+  },
+  "dependencies": {
+    "expo": "57.0.27",
+    "@solution/contracts": "workspace:*",
+    "@tanstack/react-query": "5.104.1",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "expo-secure-store": "57.0.4",
+    "expo-status-bar": "57.0.1",
+    "react-native-safe-area-context": "5.7.0",
+    "@react-native-community/netinfo": "12.0.1",
+    "expo-crypto": "57.0.3",
+    "expo-build-properties": "57.0.22",
+    "expo-constants": "57.0.21",
+    "@react-native-community/datetimepicker": "9.1.0",
+    "expo-location": "57.0.20",
+    "react-native-maps": "1.27.2"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "@types/react": "19.2.14",
+    "tsx": "4.23.15",
+    "@types/node": "24.19.1"
+  }
+}

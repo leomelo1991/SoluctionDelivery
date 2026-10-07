@@ -1,0 +1,82 @@
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap");
+
+:root,
+[data-theme="light"] {
+  --bg: #f8f9f5;
+  --surface: #ffffff;
+  --surface-sunken: #eef2e8;
+  --line: #e1e7da;
+  --line-strong: #cdd7c5;
+  --ink: #303a31;
+  --ink-muted: #626e60;
+  --ink-subtle: #879280;
+  --action: #556a52;
+  --on-action: #ffffff;
+  --accent: #5b7252;
+  --accent-soft: #eaf1e3;
+  --on-accent: #ffffff;
+  --danger: #b42318;
+  --danger-soft: #fcebe9;
+  --warning: #8a5300;
+  --warning-soft: #fcf1dc;
+
+  --shadow-sm: 0 1px 2px #1111130f;
+  --shadow-float: 0 2px 6px #1111130a, 0 12px 32px -4px #1111131f;
+  --focus-ring: 0 0 0 2px #f8f9f5, 0 0 0 4px #556a52;
+  --action-hover: #465b45;
+}
+
+[data-theme="dark"] {
+  --bg: #161c16;
+  --surface: #1e261e;
+  --surface-sunken: #283227;
+  --line: #374335;
+  --line-strong: #4b5946;
+  --ink: #edf2e8;
+  --ink-muted: #b4beae;
+  --ink-subtle: #88947f;
+  --action: #c5d6b8;
+  --on-action: #1e261e;
+  --accent: #acc79c;
+  --accent-soft: #2a3b27;
+  --on-accent: #1e261e;
+  --danger: #f97066;
+  --danger-soft: #2c1513;
+  --warning: #f2b84b;
+  --warning-soft: #2a1f0b;
+
+  --shadow-sm: 0 1px 2px #00000080;
+  --shadow-float: 0 12px 32px -4px #000000cc;
+  --focus-ring: 0 0 0 2px #161c16, 0 0 0 4px #c5d6b8;
+  --action-hover: #d7e3ce;
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --font-sans: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html { color-scheme: light dark; }
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+.tabular { font-variant-numeric: tabular-nums; }
+:focus-visible { outline: 2px solid transparent; box-shadow: var(--focus-ring); }
+:root{--paper:var(--surface);--muted:var(--ink-muted);--green:var(--action);--soft:var(--surface-sunken);--sand:var(--surface-sunken);--font-display:32px;--font-kpi:28px;--font-title:20px;--font-heading:15px;--font-body:14px;--font-sm:13px;--font-caption:12px;--overlay:#00000066}
