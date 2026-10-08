@@ -55,7 +55,19 @@ test('admin layout and financial dialogs work from small phones to wide desktops
           .getByRole('dialog')
           .getByRole('button', { name: /Fechar/ })
           .click();
+        await expect(button).toBeFocused();
+        const skip = page.getByRole('link', { name: 'Ir para o conteúdo' });
+        await expect(skip).toHaveCSS('clip-path', 'inset(50%)');
         await page.screenshot({ path: `/tmp/ui-review/directory-${width}.png`, fullPage: true });
+        if (width === 390) {
+          await page.goto(path);
+          await expect(page.locator('main h1')).toBeVisible();
+          await page.keyboard.press('Tab');
+          await expect(skip).toBeFocused();
+          await expect(skip).toHaveCSS('clip-path', 'none');
+          await page.keyboard.press('Enter');
+          await expect(page.locator('#main-content')).toBeFocused();
+        }
       }
       if (path.endsWith('financeiro')) {
         await page.getByLabel('Estabelecimento', { exact: true }).selectOption(f.store.id);

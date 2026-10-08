@@ -3,15 +3,22 @@
   position: fixed;
   top: 12px;
   left: 12px;
-  transform: translateY(-160%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
   z-index: 250;
   padding: 12px 20px;
   border-radius: 10px;
   background: var(--surface);
   color: var(--ink);
 }
-.skip-link:focus {
-  transform: translateY(0);
+.skip-link:focus-visible {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
 }
 .sidebar {
   width: 260px;
