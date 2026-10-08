@@ -21,7 +21,7 @@ export function FinanceEarnings({ manage = false }: { manage?: boolean }) {
   );
   const action = useAction();
   return (
-    <Card>
+    <Card className="finance-earnings">
       <h2>Ganhos e repasses simulados</h2>
       <p>
         Valores apurados após o fechamento semanal. Nenhum pagamento bancário é realizado nesta
@@ -109,6 +109,7 @@ export function FinanceEarnings({ manage = false }: { manage?: boolean }) {
       </div>
       {operation && (
         <Modal open title={operation.title} onClose={() => setOperation(null)}>
+          <p>Confirme para atualizar este repasse na demonstração.</p>
           <Form
             fields={[
               ...(operation.earningId
@@ -125,7 +126,6 @@ export function FinanceEarnings({ manage = false }: { manage?: boolean }) {
                     },
                   ]
                 : []),
-              { name: 'reason', label: 'Justificativa', min: 8, max: 500 },
             ]}
             initial={{ scenario: 'approve' }}
             busy={action.isPending}

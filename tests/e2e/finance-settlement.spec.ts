@@ -71,11 +71,9 @@ test('admin closes week and pays simulation; establishment and courier see their
   await expect(page.getByText('Devido no simulador', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Simular repasse', exact: true }).click();
   await dialog.getByLabel('Resultado simulado').selectOption('approve');
-  await dialog.getByLabel('Justificativa').fill('Repasse fictício de teste');
   await dialog.getByRole('button', { name: 'Confirmar simulação' }).click();
   await expect(dialog).toHaveCount(0);
   await page.getByRole('button', { name: 'Processar repasse simulado', exact: true }).click();
-  await dialog.getByLabel('Justificativa').fill('Confirmar o resultado de teste');
   await dialog.getByRole('button', { name: 'Confirmar simulação' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Simular devolução' })).toBeVisible();

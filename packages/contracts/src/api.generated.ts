@@ -1120,14 +1120,14 @@ export interface components {
             endsAt: string;
         };
         ReplacementDto: {
-            reason: string;
+            reason?: Record<string, never>;
             courierId: string;
         };
         ReasonDto: {
-            reason: string;
+            reason?: Record<string, never>;
         };
         AttendanceDto: {
-            reason: string;
+            reason?: Record<string, never>;
             attendedMinutes: number;
         };
         CourierPositionDto: {
@@ -1138,19 +1138,19 @@ export interface components {
             observedAt: number;
         };
         FinanceReasonDto: {
-            reason: string;
+            reason?: Record<string, never>;
         };
         PermissionDto: {
-            reason: string;
+            reason?: Record<string, never>;
             enabled: boolean;
             userId: string;
         };
         WalletDto: {
-            reason: string;
+            reason?: Record<string, never>;
             enabled: boolean;
         };
         TopupDto: {
-            reason: string;
+            reason?: Record<string, never>;
             establishmentId: string;
             /** @description Centavos em string decimal, sem casas decimais. */
             amountCents: string;
@@ -1166,11 +1166,11 @@ export interface components {
             deliveryId: string;
         };
         CloseReservationDto: {
-            reason: string;
+            reason?: Record<string, never>;
             consumedCents: string;
         };
         PayoutDto: {
-            reason: string;
+            reason?: Record<string, never>;
             earningId: string;
             /** @enum {string} */
             scenario: "approve" | "decline" | "timeout_after_accept";

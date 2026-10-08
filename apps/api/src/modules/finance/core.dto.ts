@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsIn, IsString, IsUUID, Length, Matches, ValidateIf } from 'class-validator';
 export class FinanceReasonDto {
-  @ApiProperty() @IsString() @Length(8, 500) reason!: string;
+  @ApiPropertyOptional() @IsString() @Length(0, 500) reason = '';
 }
 export class WalletDto extends FinanceReasonDto {
   @ApiProperty() @IsBoolean() enabled!: boolean;

@@ -82,10 +82,10 @@ export class PricingService {
         code: 'INVALID_QUOTE',
         message: 'Não informe região na modalidade por distância.',
       });
-    if (b.manualDistanceM !== undefined && (!b.manualReason || b.method !== 'distance'))
+    if (b.manualDistanceM !== undefined && b.method !== 'distance')
       throw new BadRequestException({
-        code: 'MANUAL_REASON_REQUIRED',
-        message: 'Distância manual exige modalidade por distância e justificativa.',
+        code: 'INVALID_QUOTE',
+        message: 'Distância manual exige modalidade por distância.',
       });
     const route =
       b.method === 'distance'

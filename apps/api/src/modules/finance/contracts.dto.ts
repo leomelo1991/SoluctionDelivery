@@ -15,7 +15,7 @@ import {
   IsDefined,
   IsObject,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 const trim = () => Transform(({ value }) => (typeof value === 'string' ? value.trim() : value));
 export class ShiftTemplateDto {
   @ApiProperty() @IsInt() @Min(0) @Max(6) weekday!: number;
@@ -81,7 +81,7 @@ export class AllocationDto {
   @ApiProperty() @IsISO8601({ strict: true }) endsAt!: string;
 }
 export class ReasonDto {
-  @ApiProperty() @trim() @IsString() @Length(10, 1000) reason!: string;
+  @ApiPropertyOptional() @trim() @IsString() @Length(0, 1000) reason = '';
 }
 export class AttendanceDto extends ReasonDto {
   @ApiProperty() @IsInt() @Min(0) @Max(1440) attendedMinutes!: number;

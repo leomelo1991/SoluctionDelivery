@@ -74,23 +74,8 @@ export function CreateDelivery({ user, onClose }: { user: User; onClose: () => v
       required: false,
       max: 2000,
     },
-    {
-      name: 'manualReason',
-      label: 'Justificativa para distância manual',
-      required: false,
-      max: 500,
-      full: true,
-    },
   ];
   async function submit(v: Values) {
-    if (
-      v.method === 'distance' &&
-      v.manualDistanceM !== undefined &&
-      String(v.manualReason ?? '').trim().length < 5
-    )
-      throw new Error(
-        'Informe uma justificativa com pelo menos 5 caracteres para a distância manual.',
-      );
     const quoteBody = {
       establishmentId: v.establishmentId,
       destinationAddress: takeAddress(v),
@@ -98,7 +83,7 @@ export function CreateDelivery({ user, onClose }: { user: User; onClose: () => v
       ...(v.method === 'region'
         ? { regionId: v.regionId }
         : v.manualDistanceM !== undefined
-          ? { manualDistanceM: v.manualDistanceM, manualReason: v.manualReason }
+          ? { manualDistanceM: v.manualDistanceM }
           : {}),
     };
     if (!quote) {

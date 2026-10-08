@@ -215,9 +215,6 @@ test('pricing forms apply distance formula and cumulative surcharge to the quote
   await form.getByLabel('Cidade', { exact: true }).fill('São Paulo');
   await form.getByLabel('CEP', { exact: true }).fill('01001000');
   await form.getByLabel('Distância manual em km (opcional)').fill('4.5');
-  await form
-    .getByLabel('Justificativa para distância manual')
-    .fill('Percurso conferido pelo operador');
   await form.getByRole('button', { name: 'Calcular e revisar frete' }).click();
   await expect(form.getByText('R$ 15,20', { exact: true })).toBeVisible();
   await expect(form.getByText('R$ 12,10', { exact: true })).toBeVisible();

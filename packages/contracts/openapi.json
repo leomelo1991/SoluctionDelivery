@@ -2995,14 +2995,13 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           },
           "courierId": {
             "type": "string"
           }
         },
         "required": [
-          "reason",
           "courierId"
         ]
       },
@@ -3010,25 +3009,21 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           }
-        },
-        "required": [
-          "reason"
-        ]
+        }
       },
       "AttendanceDto": {
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           },
           "attendedMinutes": {
             "type": "number"
           }
         },
         "required": [
-          "reason",
           "attendedMinutes"
         ]
       },
@@ -3060,18 +3055,15 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           }
-        },
-        "required": [
-          "reason"
-        ]
+        }
       },
       "PermissionDto": {
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           },
           "enabled": {
             "type": "boolean"
@@ -3081,7 +3073,6 @@
           }
         },
         "required": [
-          "reason",
           "enabled",
           "userId"
         ]
@@ -3090,14 +3081,13 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           },
           "enabled": {
             "type": "boolean"
           }
         },
         "required": [
-          "reason",
           "enabled"
         ]
       },
@@ -3105,7 +3095,7 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           },
           "establishmentId": {
             "type": "string"
@@ -3127,7 +3117,6 @@
           }
         },
         "required": [
-          "reason",
           "establishmentId",
           "amountCents",
           "reference",
@@ -3164,14 +3153,13 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           },
           "consumedCents": {
             "type": "string"
           }
         },
         "required": [
-          "reason",
           "consumedCents"
         ]
       },
@@ -3179,7 +3167,7 @@
         "type": "object",
         "properties": {
           "reason": {
-            "type": "string"
+            "type": "object"
           },
           "earningId": {
             "type": "string"
@@ -3194,7 +3182,6 @@
           }
         },
         "required": [
-          "reason",
           "earningId",
           "scenario"
         ]

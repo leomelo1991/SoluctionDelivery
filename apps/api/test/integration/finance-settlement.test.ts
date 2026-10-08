@@ -44,8 +44,8 @@ before(async () => {
   shop = await login(f.tenant.slug, f.operator.email);
   courier = await login(f.tenant.slug, f.courierUser.email);
   outsider = await login(other.tenant.slug, other.admin.email);
-  await post(admin, '/enable', { reason }).expect(201);
-  await post(admin, `/wallets/${f.store.id}`, { enabled: true, reason }).expect(201);
+  await post(admin, '/enable', {}).expect(201);
+  await post(admin, `/wallets/${f.store.id}`, { enabled: true }).expect(201);
   await post(admin, '/topups', {
     establishmentId: f.store.id,
     amountCents: '80000',
@@ -334,7 +334,7 @@ test('merchant unconsumed credit cannot fund a payout and missing shifts never c
       },
     },
   });
-  await post(admin, `/wallets/${f.otherStore.id}`, { enabled: true, reason }).expect(201);
+  await post(admin, `/wallets/${f.otherStore.id}`, { enabled: true }).expect(201);
   await post(admin, '/topups', {
     establishmentId: f.otherStore.id,
     amountCents: '100000000',

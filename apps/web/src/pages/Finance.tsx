@@ -19,7 +19,6 @@ import { Form } from '../components/Form';
 import { AsyncSelect } from '../components/AsyncSelect';
 import { useAction, useData } from '../lib/query';
 import { useDraftState } from '../lib/drafts';
-const reasons = { name: 'reason', label: 'Justificativa', min: 8, max: 500 };
 const topupLabel = {
   pending: 'Aguardando processamento',
   unknown: 'Confirmação pendente',
@@ -38,6 +37,9 @@ export function FinancePageView({ user }: { user: User }) {
   const [settlementCursor, setSettlementCursor] = useState('');
   const status = useData<FinanceStatus>('/finance/status');
   const id = user.role === 'establishment' ? user.establishmentId : selected;
+  const [creditReference, setCreditReference] = useDraftState(`finance:reference:${id ?? ''}`, () =>
+    crypto.randomUUID(),
+  );
   const query = `?establishmentId=${id ?? ''}`;
   const wallet = useData<FinanceWalletView>(
     '/finance/wallet' + query,
@@ -72,6 +74,7 @@ export function FinancePageView({ user }: { user: User }) {
   const manage = status.data?.canManage;
   const run = async (path: string, body: unknown) => {
     await action.mutateAsync({ path, body });
+    if (path === '/finance/topups') setCreditReference(crypto.randomUUID());
     setModal(null);
     setClosing(null);
     setStatementCursor('');
@@ -83,17 +86,16 @@ export function FinancePageView({ user }: { user: User }) {
   if (status.error)
     return <ErrorState message={status.error.message} retry={() => void status.refetch()} />;
   return (
-    <div className="stack">
+    <div className="finance-page stack">
       <div>
         <p className="eyebrow">FINANCEIRO</p>
-        <h1>Saldo e compromissos</h1>
+        <h1>Financeiro da operação</h1>
         <p className="muted">Acompanhe créditos, reservas e consumo por estabelecimento.</p>
       </div>
-      <Card>
-        <strong>Ambiente de simulação</strong>
+      <Card className="demo-banner">
+        <strong>Demonstração</strong>
         <p>
-          Os valores desta tela são fictícios. Não representam recebimentos, cobranças ou pagamentos
-          bancários. As entregas operacionais continuam funcionando normalmente.
+          Explore saldos, fechamentos e repasses com valores fictícios, sem movimentação bancária.
         </p>
       </Card>
       {!status.data?.enabled ? (
@@ -106,7 +108,7 @@ export function FinancePageView({ user }: { user: User }) {
       ) : (
         <>
           {user.role === 'admin' && (
-            <Card>
+            <Card className="finance-selector">
               <label htmlFor="finance-store">Estabelecimento</label>
               <AsyncSelect
                 label="Estabelecimento"
@@ -134,7 +136,7 @@ export function FinancePageView({ user }: { user: User }) {
           {!!id && wallet.isLoading && <Loading />}
           {wallet.data && (
             <>
-              <Card>
+              <Card className="finance-wallet">
                 <div className="row">
                   <h2>{wallet.data.establishment.name}</h2>
                   {manage && (
@@ -178,7 +180,7 @@ export function FinancePageView({ user }: { user: User }) {
               </Card>
               {enabled && (
                 <>
-                  <Card>
+                  <Card className="finance-panel">
                     <div className="row">
                       <h2>Créditos simulados</h2>
                       {manage && (
@@ -206,9 +208,7 @@ export function FinancePageView({ user }: { user: User }) {
                       <div key={t.id} className="finance-item">
                         <strong>{financeMoney(t.amountCents)}</strong>
                         <span>{topupLabel[t.status]}</span>
-                        <small>
-                          {t.reference} · {dateTime(t.createdAt)}
-                        </small>
+                        <small>{dateTime(t.createdAt)}</small>
                       </div>
                     ))}
                     <Pager
@@ -217,7 +217,7 @@ export function FinancePageView({ user }: { user: User }) {
                       set={setTopupCursor}
                     />
                   </Card>
-                  <Card>
+                  <Card className="finance-panel">
                     <h2>Fechamentos semanais</h2>
                     <p>
                       A apuração usa presença registrada e entregas com reserva financeira. A semana
@@ -250,13 +250,13 @@ export function FinancePageView({ user }: { user: User }) {
                         </span>
                       </div>
                     ))}
+                    <Pager
+                      cursor={settlementCursor}
+                      next={settlements.data?.nextCursor}
+                      set={setSettlementCursor}
+                    />
                   </Card>
-                  <Pager
-                    cursor={settlementCursor}
-                    next={settlements.data?.nextCursor}
-                    set={setSettlementCursor}
-                  />
-                  <Card>
+                  <Card className="finance-panel">
                     <h2>Reservas</h2>
                     <p className="muted">
                       O mínimo semanal é reservado uma vez por versão e semana. Nas entregas com
@@ -294,7 +294,7 @@ export function FinancePageView({ user }: { user: User }) {
                       set={setReservationCursor}
                     />
                   </Card>
-                  <Card>
+                  <Card className="finance-panel">
                     <h2>Extrato da simulação</h2>
                     {statement.error && (
                       <ErrorState
@@ -327,7 +327,7 @@ export function FinancePageView({ user }: { user: User }) {
         <ErrorState message={treasury.error.message} retry={() => void treasury.refetch()} />
       )}
       {treasury.data && (
-        <Card>
+        <Card className="finance-treasury">
           <h2>Caixa e obrigações simulados</h2>
           <dl className="contract-summary">
             <div>
@@ -377,7 +377,7 @@ export function FinancePageView({ user }: { user: User }) {
           movimentado.
         </p>
         <Form
-          fields={[reasons]}
+          fields={[]}
           onSubmit={(b) => run('/finance/enable', b)}
           submitLabel="Habilitar simulação"
         />
@@ -388,7 +388,7 @@ export function FinancePageView({ user }: { user: User }) {
         title="Configurar carteira simulada"
       >
         <Form
-          fields={[reasons]}
+          fields={[]}
           onSubmit={(b) => run(`/finance/wallets/${id}`, { ...b, enabled: !wallet.data?.enabled })}
         />
       </Modal>
@@ -409,7 +409,6 @@ export function FinancePageView({ user }: { user: User }) {
                 { value: 'no', label: 'Remover' },
               ],
             },
-            reasons,
           ]}
           onSubmit={(b) => run('/finance/permissions', { ...b, enabled: b.enabled === 'yes' })}
         />
@@ -417,6 +416,7 @@ export function FinancePageView({ user }: { user: User }) {
       <Modal open={modal === 'topup'} onClose={() => setModal(null)} title="Simular crédito">
         <Form
           draftKey={`finance:topup:${id}`}
+          initial={{ scenario: 'approve' }}
           fields={[
             {
               name: 'amountCents',
@@ -424,12 +424,6 @@ export function FinancePageView({ user }: { user: User }) {
               kind: 'money',
               min: 0.01,
               max: 1000000,
-            },
-            {
-              name: 'reference',
-              label: 'Referência única (8–80 letras, números, hífen ou sublinhado)',
-              min: 8,
-              max: 80,
             },
             {
               name: 'scenario',
@@ -444,13 +438,13 @@ export function FinancePageView({ user }: { user: User }) {
                 },
               ],
             },
-            reasons,
           ]}
           onSubmit={(b) =>
             run('/finance/topups', {
               ...b,
               amountCents: String(b.amountCents),
               establishmentId: id,
+              reference: creditReference,
             })
           }
           submitLabel="Criar crédito simulado"
@@ -521,7 +515,6 @@ export function FinancePageView({ user }: { user: User }) {
                 min: 0,
                 max: Number(closing.amountCents) / 100,
               },
-              reasons,
             ]}
             onSubmit={(b) =>
               run(`/finance/reservations/${closing.id}/close`, {

@@ -94,7 +94,7 @@
 }
 .workspace {
   padding: 32px;
-  max-width: 1280px;
+  max-width: 1480px;
   margin: 0 auto;
   min-height: calc(100dvh - 150px);
 }
@@ -829,9 +829,342 @@ tbody tr:hover {
   align-items: center;
   gap: 8px 20px;
   padding-block: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 .finance-item small {
   flex-basis: 100%;
   overflow-wrap: anywhere;
+}
+
+/* Shared responsive layout: navigation, filters, forms and financial workspace. */
+.main-area,
+.workspace,
+.stack,
+.row > *,
+.page-heading > *,
+.board-column,
+.overview-grid > *,
+.form-grid > *,
+.table-scroll {
+  min-width: 0;
+}
+.workspace {
+  padding: clamp(16px, 2.4vw, 36px);
+}
+.sidebar {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  max-width: calc(100vw - 48px);
+}
+.sidebar nav {
+  flex-shrink: 0;
+}
+.sidebar .account {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.topbar > .row {
+  flex: 1;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+}
+.topbar > .row > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.topbar > .actions {
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+.topbar .menu-toggle {
+  flex-shrink: 0;
+}
+.page-heading h1,
+.finance-page h1 {
+  font-size: clamp(26px, 2.7vw, 36px);
+  line-height: 1.2;
+}
+.page-heading > div > p:last-child {
+  color: var(--ink-muted);
+  max-width: 65ch;
+}
+.period {
+  gap: 12px 20px;
+  padding-block: 4px;
+}
+.period label {
+  flex: 0 1 210px;
+  white-space: nowrap;
+  min-width: 0;
+}
+.period input {
+  max-width: none;
+  min-width: 0;
+  min-height: 44px;
+  flex: 1;
+  font-size: 14px;
+}
+.period small {
+  flex-basis: 100%;
+  margin: 0;
+}
+.contract-summary {
+  grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr));
+}
+.contract-summary > div {
+  min-width: 0;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--surface-sunken);
+}
+.contract-summary dt {
+  color: var(--ink-muted);
+}
+.contract-summary dd {
+  font-size: clamp(20px, 2vw, 28px);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.contract-template {
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
+}
+.commercial-card {
+  display: grid;
+  gap: 8px;
+}
+.finance-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.finance-page > * {
+  grid-column: 1 / -1;
+}
+.finance-page .demo-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding: 14px 20px;
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+.demo-banner > strong {
+  color: var(--accent);
+}
+.demo-banner > p {
+  flex: 1 1 260px;
+  color: var(--ink-muted);
+}
+.finance-selector {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 20px;
+  align-items: end;
+}
+.finance-selector > label {
+  grid-column: 1 / -1;
+  font-weight: 600;
+}
+.finance-wallet,
+.finance-panel,
+.finance-treasury,
+.finance-earnings {
+  display: grid;
+  gap: 16px;
+}
+.finance-wallet {
+  border-top: 3px solid var(--accent);
+}
+.finance-wallet .contract-summary {
+  margin: 0;
+}
+.finance-wallet .contract-summary dd {
+  font-size: clamp(26px, 3vw, 38px);
+}
+.finance-panel > p,
+.finance-earnings > p {
+  color: var(--ink-muted);
+}
+.finance-panel > .row {
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.finance-item {
+  gap: 8px 16px;
+  padding: 16px 0;
+  align-items: flex-start;
+  overflow-wrap: anywhere;
+}
+.finance-item > strong {
+  flex-basis: 100%;
+  font-size: 16px;
+}
+.finance-item > span,
+.finance-item > small {
+  min-width: 0;
+  color: var(--ink-muted);
+}
+.finance-item:last-of-type {
+  border-bottom: 0;
+}
+.finance-item > .button {
+  margin-top: 4px;
+}
+.finance-treasury .contract-summary {
+  margin: 0;
+}
+.operation-map {
+  height: clamp(280px, 60dvh, 640px);
+  min-height: 0;
+}
+@media (min-width: 1200px) {
+  .finance-page {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .finance-page > .finance-panel {
+    grid-column: auto;
+    height: 100%;
+    align-content: start;
+  }
+}
+@media (max-height: 800px) {
+  .sidebar {
+    padding-top: 18px;
+  }
+  .sidebar .nav-label {
+    margin-top: 20px;
+  }
+  .sidebar-note {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .page-heading > .button {
+    align-self: flex-start;
+  }
+  .period label {
+    flex: 1 1 170px;
+  }
+  .finance-selector {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .finance-selector > .button {
+    justify-self: start;
+  }
+}
+@media (max-width: 639px) {
+  .finance-page {
+    gap: 16px;
+  }
+  .topbar {
+    gap: 8px;
+  }
+  .topbar .theme-select {
+    max-width: 105px;
+    min-height: 44px;
+  }
+  .page-heading {
+    gap: 12px;
+  }
+  .actions > .button {
+    flex: 1 1 140px;
+  }
+  .topbar .actions > .button {
+    flex: 0 0 auto;
+  }
+  .finance-wallet > .row {
+    align-items: flex-start;
+  }
+  .finance-wallet > .row > .button {
+    width: 100%;
+  }
+  .finance-wallet .contract-summary {
+    gap: 10px;
+  }
+  .finance-wallet .contract-summary > div {
+    padding: 12px;
+  }
+  .finance-wallet .contract-summary dd {
+    font-size: 26px;
+  }
+  .period {
+    align-items: stretch;
+  }
+  .period > span {
+    flex-basis: 100%;
+  }
+  .period label {
+    display: grid;
+    gap: 6px;
+    flex: 1 1 120px;
+  }
+  .period input {
+    width: 100%;
+    font-size: 16px;
+  }
+  .period small {
+    overflow-wrap: anywhere;
+  }
+  .segmented {
+    flex-wrap: wrap;
+    max-width: 100%;
+    border-radius: 16px;
+  }
+  .segmented button {
+    min-height: 44px;
+    flex: 1 1 auto;
+  }
+  .finance-item > .button {
+    width: 100%;
+  }
+  .modal .form-grid {
+    margin-top: 16px;
+  }
+}
+@media (max-width: 359px) {
+  .metrics,
+  .quote-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .topbar {
+    flex-wrap: wrap;
+  }
+  .topbar > .row {
+    flex-basis: 100%;
+  }
+  .topbar > .actions {
+    margin-left: auto;
+  }
+}
+.finance-wallet .contract-summary {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.finance-treasury .contract-summary {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 1199px) {
+  .finance-treasury .contract-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 639px) {
+  .finance-treasury .contract-summary {
+    gap: 10px;
+  }
+  .finance-treasury .contract-summary > div {
+    padding: 12px;
+  }
+  .finance-treasury .contract-summary dd {
+    font-size: 22px;
+  }
+  .finance-wallet .contract-summary dd {
+    font-size: 24px;
+  }
+}
+@media (max-width: 359px) {
+  .finance-wallet .contract-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

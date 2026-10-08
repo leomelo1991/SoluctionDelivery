@@ -338,14 +338,7 @@ export function ContractsPage({ user }: { user: User }) {
     initial?: Values;
     body?: (v: Values) => object;
   } | null>(null);
-  const reason: FormField = {
-    name: 'reason',
-    label: 'Justificativa / referência',
-    min: 10,
-    max: 1000,
-    kind: 'textarea',
-  };
-  const cancel = (title: string, path: string) => setTask({ title, path, fields: [reason] });
+  const cancel = (title: string, path: string) => setTask({ title, path, fields: [] });
   const allocate = (s: CommercialShift) =>
     setTask({
       title: 'Alocar entregador',
@@ -371,7 +364,6 @@ export function ContractsPage({ user }: { user: User }) {
           min: 0,
           max: Math.floor((Date.parse(a.endsAt) - Date.parse(a.startsAt)) / 60000),
         },
-        reason,
       ],
     });
   return (
@@ -631,7 +623,6 @@ export function ContractsPage({ user }: { user: User }) {
                                   kind: 'select',
                                   source: '/couriers',
                                 },
-                                reason,
                               ],
                             })
                           }

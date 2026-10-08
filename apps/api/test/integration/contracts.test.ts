@@ -203,7 +203,6 @@ test('contract lifecycle, immutable proposals, scoped financial data and capacit
     }).expect(400);
     await post(admin, `/contract-allocations/${assignment.id}/attendance`, {
       attendedMinutes: 120,
-      reason: 'Presença conferida pelo gestor responsável.',
     }).expect(201);
     await post(admin, `/contract-allocations/${assignment.id}/attendance`, {
       attendedMinutes: 110,

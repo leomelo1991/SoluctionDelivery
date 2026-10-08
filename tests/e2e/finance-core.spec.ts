@@ -17,19 +17,15 @@ test('financial sandbox activates, confirms credits, reserves a week and shows s
   await page.getByRole('link', { name: 'Financeiro', exact: true }).click();
   await page.getByRole('button', { name: 'Habilitar simulação financeira' }).click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByLabel('Justificativa').fill('Apresentação controlada de financeiro');
   await dialog.getByRole('button', { name: 'Habilitar simulação', exact: true }).click();
   await expect(dialog).toHaveCount(0);
   await page.getByLabel('Estabelecimento', { exact: true }).selectOption(fixture().store.id);
   await page.getByRole('button', { name: 'Ativar carteira de simulação' }).click();
-  await dialog.getByLabel('Justificativa').fill('Teste de carteira para apresentação');
   await dialog.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(dialog).toHaveCount(0);
   await page.getByRole('button', { name: 'Simular crédito', exact: true }).click();
   await dialog.getByLabel('Valor fictício (R$)').fill('800');
-  await dialog.getByLabel('Referência única', { exact: false }).fill('apresentacao-800');
   await dialog.getByLabel('Resultado simulado').selectOption('approve');
-  await dialog.getByLabel('Justificativa').fill('Crédito fictício sem operação bancária');
   await dialog.getByRole('button', { name: 'Criar crédito simulado' }).click();
   await page.getByRole('button', { name: 'Processar simulações pendentes' }).click();
   await expect(page.getByText('Crédito simulado confirmado', { exact: true })).toBeVisible();
@@ -97,7 +93,6 @@ test('financial sandbox activates, confirms credits, reserves a week and shows s
   await expect(shop.locator('body')).toHaveJSProperty('scrollWidth', 390);
   await page.getByRole('button', { name: 'Encerrar reserva simulada' }).click();
   await dialog.getByLabel('Consumo fictício (R$)').fill('520');
-  await dialog.getByLabel('Justificativa').fill('Consumo apenas de simulação para teste');
   await dialog.getByRole('button', { name: 'Confirmar encerramento simulado' }).click();
   await expect(dialog).toHaveCount(0);
   await expect(shop.locator('dd').filter({ hasText: 'R$ 280,00' })).toBeVisible();
