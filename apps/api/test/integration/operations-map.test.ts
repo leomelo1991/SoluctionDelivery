@@ -99,6 +99,55 @@ test('GPS validates freshness and owner, rejects replay and restricts map by ten
   assert.ok(
     scoped.pins.find((p: { kind: string; active: boolean }) => p.kind === 'pickup' && p.active),
   );
+  // Outra loja da mesma plataforma, com entrega e entregador online próprios.
+  const otherDelivery = await db.delivery.create({
+    data: {
+      tenantId: f.tenant.id,
+      establishmentId: f.otherStore.id,
+      courierId: f.second.id,
+      status: 'accepted',
+      pickupAddress: { ...address, number: '700' },
+      destinationAddress: { ...address, number: '800' },
+      recipientName: 'Outra entrega',
+      recipientPhone: '11999999999',
+      feeCents: 1000,
+      courierPayoutCents: 800,
+      pricingSnapshot: {},
+    },
+  });
+  await db.courierPosition.create({
+    data: {
+      tenantId: f.tenant.id,
+      courierId: f.second.id,
+      latitude: -20.55,
+      longitude: -47.41,
+      accuracy: 9,
+      observedAt: new Date(),
+    },
+  });
+  try {
+    const all = (await get(admin).expect(200)).body;
+    assert.ok(all.pins.some((p: { id: string }) => p.id.includes(otherDelivery.id)));
+    assert.ok(all.couriers.some((c: { id: string }) => c.id === f.second.id));
+    // Nem um parâmetro manipulado pode ampliar o escopo da sessão do lojista.
+    const own = (await get(shop).query({ establishmentId: f.otherStore.id }).expect(200)).body;
+    assert.deepEqual(
+      own.pins
+        .filter((p: { kind: string }) => p.kind === 'establishment')
+        .map((p: { id: string }) => p.id),
+      [`establishment:${f.store.id}`],
+    );
+    assert.equal(own.pins.length, 3);
+    assert.ok(!JSON.stringify(own).includes(otherDelivery.id));
+    assert.ok(!JSON.stringify(own).includes(f.otherStore.id));
+    assert.deepEqual(
+      own.couriers.map((c: { id: string }) => c.id),
+      [f.courier.id],
+    );
+  } finally {
+    await db.delivery.delete({ where: { id: otherDelivery.id } });
+    await db.courierPosition.deleteMany({ where: { courierId: f.second.id } });
+  }
   await db.delivery.update({ where: { id: delivery.id }, data: { status: 'collected' } });
   scoped = (await get(shop)).body;
   assert.equal(scoped.couriers[0].leg, 'dropoff');

@@ -40,7 +40,7 @@ jobs:
       - run: corepack pnpm lint
       - run: corepack pnpm typecheck
       - run: corepack pnpm test
-      - run: node --test --test-isolation=none apps/web/test/vercel-config.test.mjs
+      - run: node --test --test-isolation=none apps/web/test/*.test.mjs
       - run: corepack pnpm test:mobile
       - run: corepack pnpm --filter @solution/mobile check
       - run: corepack pnpm test:integration

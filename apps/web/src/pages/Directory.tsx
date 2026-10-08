@@ -97,69 +97,61 @@ export function Directory({ kind }: { kind: 'establishments' | 'couriers' }) {
           description="Cadastre sua rede para começar a operação."
         />
       ) : (
-        <div className="table-scroll">
-          <table>
-            <thead>
-              <tr>
-                <th>Nome</th>
-                <th>{stores ? 'Responsável / cidade' : 'Contato / veículo'}</th>
-                <th>{stores ? 'Relacionamento' : 'Aprovação'}</th>
-                <th>Operação</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((e) => {
-                const store = e as Establishment;
-                const courier = e as Courier;
-                return (
-                  <tr key={e.id}>
-                    <td>
-                      <strong>{e.name}</strong>
-                    </td>
-                    <td>
-                      {stores ? store.responsible : courier.phone}
-                      <small>{stores ? store.city : labels[courier.vehicle]}</small>
-                    </td>
-                    <td>
-                      <Status
-                        tone={
-                          (
-                            stores
-                              ? store.lifecycleStatus === 'active'
-                              : courier.approvalStatus === 'approved'
-                          )
-                            ? 'positive'
-                            : 'neutral'
-                        }
-                      >
-                        {labels[stores ? store.lifecycleStatus : courier.approvalStatus]}
-                      </Status>
-                    </td>
-                    <td>
-                      {stores ? (
-                        <Status tone={store.operationOpen ? 'positive' : 'neutral'}>
-                          {store.operationOpen ? 'Aberta' : 'Pausada'}
-                        </Status>
-                      ) : (
-                        <Status
-                          tone={courier.availabilityStatus === 'available' ? 'positive' : 'neutral'}
-                        >
-                          {labels[courier.availabilityStatus]}
-                        </Status>
-                      )}
-                    </td>
-                    <td>
-                      <Button variant="secondary" onClick={() => setDetail(e.id)}>
-                        Ver perfil
-                      </Button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ul
+          className="directory-grid"
+          aria-label={stores ? 'Estabelecimentos cadastrados' : 'Entregadores cadastrados'}
+        >
+          {entries.map((e) => {
+            const store = e as Establishment;
+            const courier = e as Courier;
+            return (
+              <li className="directory-card" key={e.id}>
+                <div className="directory-identity">
+                  <h2>{e.name}</h2>
+                  <p className="muted">{stores ? store.responsible : courier.phone}</p>
+                  <p className="muted">{stores ? store.city : labels[courier.vehicle]}</p>
+                </div>
+                <div className="directory-statuses">
+                  <div>
+                    <small>{stores ? 'Relacionamento' : 'Aprovação'}</small>
+                    <Status
+                      tone={
+                        (
+                          stores
+                            ? store.lifecycleStatus === 'active'
+                            : courier.approvalStatus === 'approved'
+                        )
+                          ? 'positive'
+                          : 'neutral'
+                      }
+                    >
+                      {labels[stores ? store.lifecycleStatus : courier.approvalStatus]}
+                    </Status>
+                  </div>
+                  <div>
+                    <small>Operação</small>
+                    <Status
+                      tone={
+                        (stores ? store.operationOpen : courier.availabilityStatus === 'available')
+                          ? 'positive'
+                          : 'neutral'
+                      }
+                    >
+                      {stores
+                        ? store.operationOpen
+                          ? 'Aberta'
+                          : 'Pausada'
+                        : labels[courier.availabilityStatus]}
+                    </Status>
+                  </div>
+                </div>
+                <Button variant="secondary" onClick={() => setDetail(e.id)}>
+                  Ver perfil
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
       )}
       {query.data && <Pagination {...query.data} onChange={setPage} />}{' '}
       {creating && (

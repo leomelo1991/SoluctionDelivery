@@ -13,8 +13,17 @@ test('admin and establishment share a scoped map; browser courier sends GPS and 
   page,
   browser,
 }) => {
+  // Valida a inicialização do SDK sem usar credenciais reais nem depender do Google.
+  await page.route('https://maps.googleapis.com/maps/api/js**', (route) => route.abort());
   await login(page, 'admin@example.test');
+  const sdkRequest = page.waitForRequest((request) =>
+    request.url().startsWith('https://maps.googleapis.com/maps/api/js'),
+  );
+
   await page.getByRole('link', { name: 'Mapa da operação' }).click();
+  expect(new URL((await sdkRequest).url()).searchParams.get('key')).toBe('e2e-public-maps-key');
+  await expect(page.locator('.operation-map')).toBeVisible();
+  await expect(page.getByText(/O mapa ainda não está habilitado/)).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Mapa da operação', exact: true })).toBeVisible();
   await expect(page.getByText('Outra loja', { exact: true })).toBeVisible();
   const context = await browser.newContext({
@@ -28,6 +37,7 @@ test('admin and establishment share a scoped map; browser courier sends GPS and 
   ).toBeVisible();
   await expect(page.getByText('1 entregadores com GPS recente', { exact: true })).toBeVisible();
   const shop = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await shop.route('https://maps.googleapis.com/maps/api/js**', (route) => route.abort());
   await login(shop, 'loja@example.test');
   await shop.goto('/estabelecimento/mapa');
   await expect(shop.getByText('Loja de testes', { exact: true })).toBeVisible();

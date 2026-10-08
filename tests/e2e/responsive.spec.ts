@@ -42,6 +42,21 @@ test('admin layout and financial dialogs work from small phones to wide desktops
     ]) {
       await page.goto(path);
       await expect(page.locator('main h1').first()).toBeVisible();
+      if (path.endsWith('estabelecimentos')) {
+        const card = page.locator('.directory-card').filter({ hasText: 'Loja de testes' });
+        await expect(card.getByRole('heading', { name: 'Loja de testes' })).toBeVisible();
+        const button = card.getByRole('button', { name: 'Ver perfil', exact: true });
+        const bounds = await button.boundingBox();
+        expect(bounds!.width).toBeGreaterThan(120);
+        expect(bounds!.height).toBeLessThan(70);
+        await button.click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+        await page
+          .getByRole('dialog')
+          .getByRole('button', { name: /Fechar/ })
+          .click();
+        await page.screenshot({ path: `/tmp/ui-review/directory-${width}.png`, fullPage: true });
+      }
       if (path.endsWith('financeiro')) {
         await page.getByLabel('Estabelecimento', { exact: true }).selectOption(f.store.id);
         await expect(

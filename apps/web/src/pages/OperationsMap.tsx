@@ -167,7 +167,7 @@ export function OperationsMap({ user }: { user: User }) {
   const missing = data?.pins.filter((p) => !p.point) ?? [];
   return (
     <div className="stack">
-      <div className="page-heading">
+      <div className="stack">
         <p className="eyebrow">ACOMPANHAMENTO DA OPERAÇÃO</p>
         <h1>Mapa da operação</h1>
         <p className="muted">
@@ -275,7 +275,11 @@ export function OperationsMap({ user }: { user: User }) {
         )}
       </Card>
       <Card>
-        <h2>Estabelecimentos e locais das entregas</h2>
+        <h2>
+          {user.role === 'admin'
+            ? 'Estabelecimentos e locais das entregas'
+            : 'Seu estabelecimento e suas entregas'}
+        </h2>
         <ul className="operation-map-list">
           {data?.pins.map((p) => (
             <li key={p.id}>
