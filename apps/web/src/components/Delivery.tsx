@@ -7,7 +7,17 @@ import { useAction, useData } from '../lib/query';
 import { useDraftState } from '../lib/drafts';
 export function DeliveryStatus({ status }: { status: Stage }) {
   return (
-    <Status tone={status === 'delivered' ? 'positive' : 'neutral'}>{stageLabels[status]}</Status>
+    <Status
+      tone={
+        status === 'delivered' || status === 'collected'
+          ? 'positive'
+          : status === 'waiting' || status === 'assigned'
+            ? 'warning'
+            : 'neutral'
+      }
+    >
+      {stageLabels[status]}
+    </Status>
   );
 }
 export function DeliveryCard({
@@ -20,7 +30,7 @@ export function DeliveryCard({
   onDetails: (id: string) => void;
 }) {
   return (
-    <Card className="delivery-card">
+    <Card className={`delivery-card delivery-${d.status}`}>
       <div className="row">
         <strong>#{d.code}</strong>
         <DeliveryStatus status={d.status} />
@@ -213,7 +223,7 @@ export function DeliveryBoard({
           <section className="board-column" key={label}>
             <div className="column-heading">
               <h3>{label}</h3>
-              <span>{list.length}</span>
+              <span aria-label={`${list.length} entregas nesta página`}>{list.length}</span>
             </div>
             <div className="stack">
               {list.map((d) => (
