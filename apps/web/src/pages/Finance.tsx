@@ -1,3 +1,4 @@
+import { FinanceEarnings } from './FinanceEarnings';
 import { useState } from 'react';
 import type {
   User,
@@ -7,6 +8,8 @@ import type {
   FinanceStatementItem,
   FinanceReservationView,
   FinanceTopupView,
+  FinanceSettlementView,
+  FinanceTreasuryView,
   CommercialContract,
   Page,
 } from '@solution/contracts';
@@ -26,12 +29,13 @@ const topupLabel = {
 export function FinancePageView({ user }: { user: User }) {
   const [selected, setSelected] = useDraftState('finance:establishment', '');
   const [modal, setModal] = useState<
-    'enable' | 'configure' | 'topup' | 'week' | 'delivery' | 'permission' | null
+    'enable' | 'configure' | 'topup' | 'week' | 'delivery' | 'permission' | 'settle' | null
   >(null);
   const [closing, setClosing] = useState<FinanceReservationView | null>(null);
   const [statementCursor, setStatementCursor] = useState('');
   const [reservationCursor, setReservationCursor] = useState('');
   const [topupCursor, setTopupCursor] = useState('');
+  const [settlementCursor, setSettlementCursor] = useState('');
   const status = useData<FinanceStatus>('/finance/status');
   const id = user.role === 'establishment' ? user.establishmentId : selected;
   const query = `?establishmentId=${id ?? ''}`;
@@ -52,7 +56,18 @@ export function FinancePageView({ user }: { user: User }) {
     '/finance/topups' + query + (topupCursor ? `&cursor=${topupCursor}` : ''),
     enabled,
   );
-  const contracts = useData<Page<CommercialContract>>('/contracts?pageSize=100', modal === 'week');
+  const settlements = useData<FinancePage<FinanceSettlementView>>(
+    '/finance/settlements' + query + (settlementCursor ? `&cursor=${settlementCursor}` : ''),
+    enabled,
+  );
+  const contracts = useData<Page<CommercialContract>>(
+    '/contracts?pageSize=100',
+    modal === 'week' || modal === 'settle',
+  );
+  const treasury = useData<FinanceTreasuryView>(
+    '/finance/treasury',
+    user.role === 'admin' && !!status.data?.enabled,
+  );
   const action = useAction();
   const manage = status.data?.canManage;
   const run = async (path: string, body: unknown) => {
@@ -62,6 +77,7 @@ export function FinancePageView({ user }: { user: User }) {
     setStatementCursor('');
     setReservationCursor('');
     setTopupCursor('');
+    setSettlementCursor('');
   };
   if (status.isLoading) return <Loading />;
   if (status.error)
@@ -102,6 +118,7 @@ export function FinancePageView({ user }: { user: User }) {
                   setStatementCursor('');
                   setReservationCursor('');
                   setTopupCursor('');
+                  setSettlementCursor('');
                 }}
               />
               {manage && (
@@ -201,6 +218,45 @@ export function FinancePageView({ user }: { user: User }) {
                     />
                   </Card>
                   <Card>
+                    <h2>Fechamentos semanais</h2>
+                    <p>
+                      A apuração usa presença registrada e entregas com reserva financeira. A semana
+                      precisa estar encerrada, com todos os turnos cadastrados e todas as entregas
+                      reservadas concluídas.
+                    </p>
+                    {manage && (
+                      <Button onClick={() => setModal('settle')}>Fechar semana simulada</Button>
+                    )}
+                    {settlements.error && (
+                      <ErrorState
+                        message={settlements.error.message}
+                        retry={() => void settlements.refetch()}
+                      />
+                    )}
+                    {settlements.data?.items.length === 0 && <p>Nenhuma semana fechada.</p>}
+                    {settlements.data?.items.map((s) => (
+                      <div className="finance-item" key={s.id}>
+                        <strong>
+                          Semana de {dateTime(s.weekStart)} · {financeMoney(s.totalCents)}
+                        </strong>
+                        <span>
+                          Disponibilidade: {financeMoney(s.availabilityCents)} · Plataforma:{' '}
+                          {financeMoney(s.platformCents)} · Entregas:{' '}
+                          {financeMoney(s.variableCents)}
+                        </span>
+                        <span>
+                          Capacidade prestada: {s.attendedMinutes}/{s.plannedMinutes} min · Crédito
+                          liberado: {financeMoney(s.releasedCents)}
+                        </span>
+                      </div>
+                    ))}
+                  </Card>
+                  <Pager
+                    cursor={settlementCursor}
+                    next={settlements.data?.nextCursor}
+                    set={setSettlementCursor}
+                  />
+                  <Card>
                     <h2>Reservas</h2>
                     <p className="muted">
                       O mínimo semanal é reservado uma vez por versão e semana. Nas entregas com
@@ -267,6 +323,50 @@ export function FinancePageView({ user }: { user: User }) {
           )}
         </>
       )}
+      {treasury.error && (
+        <ErrorState message={treasury.error.message} retry={() => void treasury.refetch()} />
+      )}
+      {treasury.data && (
+        <Card>
+          <h2>Caixa e obrigações simulados</h2>
+          <dl className="contract-summary">
+            <div>
+              <dt>Caixa</dt>
+              <dd>{financeMoney(treasury.data.cashCents)}</dd>
+            </div>
+            <div>
+              <dt>Créditos das lojas</dt>
+              <dd>{financeMoney(treasury.data.merchantCreditCents)}</dd>
+            </div>
+            <div>
+              <dt>Repasses pendentes</dt>
+              <dd>{financeMoney(treasury.data.pendingPayoutCents)}</dd>
+            </div>
+            <div>
+              <dt>Caixa livre</dt>
+              <dd>{financeMoney(treasury.data.freeCashCents)}</dd>
+            </div>
+            <div>
+              <dt>Devido aos entregadores</dt>
+              <dd>{financeMoney(treasury.data.dueCents)}</dd>
+            </div>
+            <div>
+              <dt>Receita apurada</dt>
+              <dd>{financeMoney(treasury.data.revenueCents)}</dd>
+            </div>
+            <div>
+              <dt>Custo apurado</dt>
+              <dd>{financeMoney(treasury.data.costCents)}</dd>
+            </div>
+          </dl>
+          <p>
+            {treasury.data.accountingConsistent
+              ? 'Conferência contábil sem divergências.'
+              : 'Divergência contábil: revise antes de processar novos repasses.'}
+          </p>
+        </Card>
+      )}
+      {status.data?.enabled && user.role === 'admin' && <FinanceEarnings manage={!!manage} />}
       <Modal
         open={modal === 'enable'}
         onClose={() => setModal(null)}
@@ -356,10 +456,15 @@ export function FinancePageView({ user }: { user: User }) {
           submitLabel="Criar crédito simulado"
         />
       </Modal>
-      <Modal open={modal === 'week'} onClose={() => setModal(null)} title="Reservar mínimo semanal">
+      <Modal
+        open={modal === 'week' || modal === 'settle'}
+        onClose={() => setModal(null)}
+        title={modal === 'settle' ? 'Fechar semana simulada' : 'Reservar mínimo semanal'}
+      >
         <p>
-          Será reservado o mínimo de disponibilidade mais a taxa de plataforma do contrato, sem o
-          volume variável previsto. Semana completa de segunda a segunda, em São Paulo.
+          {modal === 'settle'
+            ? 'O fechamento registra consumo e ganhos com base na presença e nas entregas reservadas. O demonstrativo é imutável. Política de simulação: disponibilidade e fixo proporcionais à presença; tarifa de plataforma integral.'
+            : 'Será reservado o mínimo de disponibilidade mais a taxa de plataforma, sem o volume variável previsto. Semana completa de segunda a segunda, em São Paulo.'}
         </p>
         {contracts.error ? (
           <ErrorState message={contracts.error.message} retry={() => void contracts.refetch()} />
@@ -381,7 +486,9 @@ export function FinancePageView({ user }: { user: User }) {
               },
               { name: 'week', label: 'Segunda-feira (AAAA-MM-DD)', min: 10, max: 10 },
             ]}
-            onSubmit={(b) => run('/finance/reservations/week', b)}
+            onSubmit={(b) =>
+              run(modal === 'settle' ? '/finance/settlements' : '/finance/reservations/week', b)
+            }
           />
         )}
       </Modal>

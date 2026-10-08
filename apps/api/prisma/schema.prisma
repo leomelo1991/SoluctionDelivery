@@ -83,6 +83,7 @@ model Establishment {
  @@index([tenantId, lifecycleStatus])
 }
 model Courier {
+ financeEarnings FinanceEarning[]
  id String @id @default(uuid()) @db.Uuid
  tenantId String @db.Uuid
  name String
@@ -272,6 +273,7 @@ model ContractVersion {
  acceptedBy String? @db.Uuid
  acceptanceEvidence String?
  contract MerchantContract @relation(fields: [tenantId, contractId], references: [tenantId, id])
+ financeSettlements FinanceSettlement[]
  financeReservations FinanceReservation[]
  shifts ScheduledShift[]
  @@unique([tenantId, id])
@@ -356,6 +358,7 @@ model FinanceWorkspace {
  wallets FinanceWallet[]
  accounts LedgerAccount[]
  transactions LedgerTransaction[]
+ settlements FinanceSettlement[]
  operations FinanceOperation[]
 }
 model FinancePermission {
@@ -500,4 +503,54 @@ model FinanceSandboxReceipt {
  outcome String
  topup FinanceTopup @relation(fields: [tenantId, topupId], references: [tenantId, id], onDelete: Cascade)
  @@id([tenantId, topupId])
+}
+
+// Demonstrativo fechado e obrigações independentes da movimentação bancária.
+model FinanceSettlement {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ establishmentId String @db.Uuid
+ versionId String @db.Uuid
+ weekStart DateTime
+ total BigInt
+ snapshot Json
+ actorId String @db.Uuid
+ createdAt DateTime @default(now())
+ workspace FinanceWorkspace @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade)
+ version ContractVersion @relation(fields: [tenantId, versionId], references: [tenantId, id])
+ earnings FinanceEarning[]
+ @@unique([tenantId, id])
+ @@unique([tenantId, versionId, weekStart])
+ @@index([tenantId, establishmentId, createdAt])
+}
+model FinanceEarning {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ settlementId String @db.Uuid
+ courierId String @db.Uuid
+ source String
+ amount BigInt
+ snapshot Json
+ createdAt DateTime @default(now())
+ settlement FinanceSettlement @relation(fields: [tenantId, settlementId], references: [tenantId, id], onDelete: Cascade)
+ courier Courier @relation(fields: [tenantId, courierId], references: [tenantId, id])
+ payouts FinancePayout[]
+ @@unique([tenantId, id])
+ @@unique([tenantId, source])
+ @@index([tenantId, courierId, createdAt])
+}
+model FinancePayout {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ earningId String @db.Uuid
+ amount BigInt
+ status String @default("pending")
+ scenario String
+ destination String
+ actorId String @db.Uuid
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ earning FinanceEarning @relation(fields: [tenantId, earningId], references: [tenantId, id], onDelete: Cascade)
+ @@unique([tenantId, id])
+ @@index([tenantId, status, createdAt])
 }

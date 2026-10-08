@@ -1,3 +1,4 @@
+import { FinanceEarnings } from './FinanceEarnings';
 import { useCourierLocation } from '../lib/useCourierLocation';
 import { useState } from 'react';
 import { useDraftState } from '../lib/drafts';
@@ -62,6 +63,7 @@ export function CourierApp({ user }: { user: User }) {
   return (
     <div className="courier-content stack">
       <p className="muted">{gpsStatus}</p>
+      {view === 'history' && <FinanceEarnings />}
       <div className="row">
         <div>
           <p className="eyebrow">SUA JORNADA</p>

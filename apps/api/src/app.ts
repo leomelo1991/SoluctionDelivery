@@ -1,3 +1,4 @@
+import { SettlementController } from './modules/finance/settlement.controller.js';
 import { FinanceController } from './modules/finance/core.controller.js';
 import { FinanceWorker } from './modules/finance/worker.js';
 import { OperationsMapController } from './modules/operations-map.js';
@@ -86,7 +87,13 @@ class DashboardModule {}
     AuthModule,
     DashboardModule,
   ],
-  controllers: [HealthController, ContractsController, OperationsMapController, FinanceController],
+  controllers: [
+    HealthController,
+    ContractsController,
+    OperationsMapController,
+    FinanceController,
+    SettlementController,
+  ],
   providers: [
     FinanceWorker,
     { provide: APP_GUARD, useClass: SecurityGuard },

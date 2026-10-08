@@ -48,3 +48,7 @@ Aplicar `202610080003_finance_core` e `202610080004_ledger_entry_identity`, gera
 Testes cobrem centavos/limites, fronteira semanal, capacidade financeira, escopo de loja/empresa, corrida de reservas, duplicação entre usuários, replay de eventos, confirmação incerta, retomada de lease, imutabilidade, transação desequilibrada, saldo negativo e distinção entre mínimo e variável. O cenário de uma reserva fictícia de R$ 800 consumida em R$ 720 libera R$ 80 uma vez; isso testa o mecanismo de liberação, não a apuração automática de uma semana. Playwright percorre ativação, crédito, confirmação, reserva de contrato e extrato em viewport móvel.
 
 Próxima fase: F3 — apuração a partir de turnos, presença e entregas, fixo/variável/garantia e demonstrativo semanal. Ganhos do entregador, repasse Pix real, cartão e pós-pago ainda não são executados por este núcleo.
+
+## Fechamento e ganhos
+
+A evolução da simulação está documentada em [Fechamento e repasses simulados](fechamento-repasses-simulados.md). Inclui demonstrativos, remuneração, caixa e repasses fictícios; não ativa gateway, Pix ou cartão.

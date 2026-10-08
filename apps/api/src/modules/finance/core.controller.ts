@@ -1,3 +1,4 @@
+import { closeReservation } from './reservation-close.js';
 import {
   BadRequestException,
   Body,
@@ -312,13 +313,14 @@ export class FinanceController {
       where: { tenantId_source: { tenantId: a.tenantId, source: data.source } },
     });
     if (old) return old;
-    if (data.amount <= 0n)
-      throw new BadRequestException('O componente não possui valor a reservar.');
+    if (data.amount < 0n) throw new BadRequestException('Valor de reserva inválido.');
     if ((await balance(tx, a.tenantId, data.establishmentId, 'available')) < data.amount)
       throw new ConflictException('Saldo disponível insuficiente para este compromisso.');
     const v = await tx.financeReservation.create({
       data: { ...data, tenantId: a.tenantId, snapshot: json(data.snapshot) },
     });
+    // Uma entrega incluída/sem tarifa ainda precisa de origem para apurar remuneração.
+    if (data.amount === 0n) return v;
     const available = await account(tx, a.tenantId, 'available', data.establishmentId),
       reserved = await account(tx, a.tenantId, 'reserved', data.establishmentId);
     await post(
@@ -388,6 +390,17 @@ export class FinanceController {
           contract: { establishmentId: d.establishmentId },
         },
       });
+      if (
+        v &&
+        (await tx.financeSettlement.findFirst({
+          where: {
+            tenantId: r.actor.tenantId,
+            versionId: v.id,
+            weekStart: { lte: d.createdAt, gt: new Date(d.createdAt.getTime() - 7 * 86400000) },
+          },
+        }))
+      )
+        throw new ConflictException('Semana já fechada; não é possível adicionar novas reservas.');
       // Contrato dedicado cobra somente variável: nunca soma tarifa operacional + mínimo de novo.
       const terms = v?.terms as unknown as ContractTerms | undefined;
       const value = terms ? terms.deliveryFeeCents : d.feeCents;
@@ -414,49 +427,7 @@ export class FinanceController {
     @Body() b: CloseReservationDto,
   ) {
     return financialCommand(this.db, r.actor, key, 'reserve.close', { id, ...b }, async (tx) => {
-      const v = await tx.financeReservation.findUnique({
-        where: { tenantId_id: { tenantId: r.actor.tenantId, id } },
-      });
-      if (!v) throw new NotFoundException();
-      const consumed = amount(b.consumedCents, true);
-      if (v.status === 'closed') {
-        if (v.consumed !== consumed)
-          throw new ConflictException('Reserva já encerrada com outro valor.');
-        return v;
-      }
-      if (consumed > v.amount) throw new BadRequestException('Consumo não pode exceder a reserva.');
-      // Pausa bloqueia novos compromissos, não impede liberar/encerrar os já existentes.
-      const reserved = await account(tx, r.actor.tenantId, 'reserved', v.establishmentId);
-      if (consumed > 0n) {
-        const revenue = await account(tx, r.actor.tenantId, 'revenue');
-        await post(
-          tx,
-          r.actor.tenantId,
-          r.actor.id,
-          `consume:${v.id}`,
-          'Consumo simulado da reserva',
-          reserved.id,
-          revenue.id,
-          consumed,
-        );
-      }
-      if (v.amount > consumed) {
-        const available = await account(tx, r.actor.tenantId, 'available', v.establishmentId);
-        await post(
-          tx,
-          r.actor.tenantId,
-          r.actor.id,
-          `release:${v.id}`,
-          'Liberação do valor não consumido (simulação)',
-          reserved.id,
-          available.id,
-          v.amount - consumed,
-        );
-      }
-      return tx.financeReservation.update({
-        where: { id: v.id },
-        data: { status: 'closed', consumed, closedAt: new Date() },
-      });
+      return closeReservation(tx, r.actor, id, amount(b.consumedCents, true));
     });
   }
 }

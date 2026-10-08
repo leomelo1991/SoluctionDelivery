@@ -1123,6 +1123,228 @@
         ]
       }
     },
+    "/api/v1/finance/settlements": {
+      "post": {
+        "operationId": "SettlementController_close",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeekReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fechamento e repasses de simulação"
+        ]
+      },
+      "get": {
+        "operationId": "SettlementController_list",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fechamento e repasses de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/earnings": {
+      "get": {
+        "operationId": "SettlementController_earnings",
+        "parameters": [
+          {
+            "name": "courierId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fechamento e repasses de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/treasury": {
+      "get": {
+        "operationId": "SettlementController_treasury",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fechamento e repasses de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/payouts": {
+      "post": {
+        "operationId": "SettlementController_payout",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PayoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fechamento e repasses de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/payouts/{id}/process": {
+      "post": {
+        "operationId": "SettlementController_process",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fechamento e repasses de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/payouts/{id}/return": {
+      "post": {
+        "operationId": "SettlementController_returned",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Fechamento e repasses de simulação"
+        ]
+      }
+    },
     "/api/v1/deliveries/{id}/navigation": {
       "post": {
         "operationId": "NavigationController_route",
@@ -2951,6 +3173,30 @@
         "required": [
           "reason",
           "consumedCents"
+        ]
+      },
+      "PayoutDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "earningId": {
+            "type": "string"
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "decline",
+              "timeout_after_accept"
+            ]
+          }
+        },
+        "required": [
+          "reason",
+          "earningId",
+          "scenario"
         ]
       },
       "NavigationDto": {

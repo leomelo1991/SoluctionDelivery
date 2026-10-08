@@ -244,7 +244,7 @@ export type {
 
 export type { MapPoint, OperationsMapPin, OperationsMapSnapshot } from './operations-map';
 export * from './position-publisher';
-export { financeMoney } from './finance';
+export { financeMoney, payoutLabels } from './finance';
 export type {
   FinanceStatus,
   FinanceWalletView,
@@ -252,4 +252,7 @@ export type {
   FinanceStatementItem,
   FinanceReservationView,
   FinanceTopupView,
+  FinanceSettlementView,
+  FinanceEarningView,
+  FinanceTreasuryView,
 } from './finance';

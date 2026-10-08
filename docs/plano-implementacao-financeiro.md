@@ -1,6 +1,6 @@
 # Plano de implementação — contratos, cobrança e repasses
 
-Status: F1 (contratos e capacidade) e o núcleo F2 em simulação foram implementados. F2 inclui ledger, reservas, permissões, inbox/outbox e executor falso durável, com telas admin/loja. Acerto automático, remuneração devida e integrações bancárias continuam nas próximas fases. Veja [F1](contratos-escalas.md) e [F2](nucleo-financeiro.md).
+Status: F1 e núcleo F2 implementados; apuração F3 com política de simulação, demonstrativos, ganhos e repasses fictícios adicionados. F4–F9 continuam pendentes: não há integração bancária, cartão ou faturamento pós-pago. Veja [F1](contratos-escalas.md), [F2](nucleo-financeiro.md) e [fechamento e limites da simulação](fechamento-repasses-simulados.md).
 
 Base: `main` em `3f4d2288edd469c505894f02d6663137883854af`. Branch: `feat/financeiro-contratos-repasses`. Análise em 08/10/2026 do [documento fornecido, versão 1.3](referencias/plano-financeiro-entregas-v1.3.md). O anexo é a referência funcional; este plano adapta suas 18 seções ao código existente. As referências comerciais e externas do anexo não foram verificadas nesta análise. O rascunho anterior `financeiro-repasses.md` permanece preservado, mas não define o escopo desta implementação.
 

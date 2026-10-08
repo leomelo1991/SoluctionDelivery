@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './test';
 import { readFileSync } from 'node:fs';
 const fixture = () => JSON.parse(readFileSync('test-results/fixture.json', 'utf8'));
 async function login(page: Page, email: string) {

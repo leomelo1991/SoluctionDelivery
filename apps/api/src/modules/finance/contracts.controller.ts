@@ -522,6 +522,14 @@ export class ContractsController {
       const a = await tx.courierAllocation.findUniqueOrThrow({
         where: { tenantId_id: { tenantId: r.actor.tenantId, id } },
       });
+      const settled = await tx.financeSettlement.findFirst({
+        where: {
+          tenantId: r.actor.tenantId,
+          version: { shifts: { some: { allocations: { some: { id } } } } },
+          weekStart: { lte: a.startsAt, gt: new Date(a.startsAt.getTime() - 7 * 86400000) },
+        },
+      });
+      if (settled) throw new ConflictException('Presença já apurada em demonstrativo fechado.');
       if (
         a.cancelledAt ||
         a.endsAt > new Date() ||

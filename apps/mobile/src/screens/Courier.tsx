@@ -1,3 +1,4 @@
+import { FinanceEarnings } from '../components/FinanceEarnings';
 import { useCourierTracking } from '../core/useCourierTracking';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
@@ -365,6 +366,7 @@ export function CourierHome() {
               {history.data && <Pages data={history.data} onChange={setPage} />}
             </>
           )}
+          {tab === 'history' && <FinanceEarnings />}
           {tab === 'account' && (
             <Card>
               <Copy title>Minha conta</Copy>
