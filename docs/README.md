@@ -20,3 +20,5 @@ Ordem de leitura: produto → regras → arquitetura → dados e API → precifi
 Esta base não é um recurso de IA em tempo de execução. É documentação técnica e de produto versionada junto ao código.
 
 [Entrega e evidências locais](entrega.md) registra funcionalidades, verificações e limitações.
+
+[Contratos e escalas](contratos-escalas.md) e [núcleo financeiro de simulação](nucleo-financeiro.md) documentam as etapas F1/F2 do [plano de repasses](plano-implementacao-financeiro.md).

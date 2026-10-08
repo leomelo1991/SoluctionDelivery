@@ -14,7 +14,8 @@
     "seed:demo": "tsx scripts/seed-demo.ts",
     "openapi": "tsc && node dist/scripts/openapi.js",
     "seed:deliveries": "node --import tsx scripts/seed-deliveries.ts",
-    "seed:investors": "tsx scripts/seed-investors.ts"
+    "seed:investors": "tsx scripts/seed-investors.ts",
+    "finance:work": "tsx scripts/finance-worker.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.2.7",

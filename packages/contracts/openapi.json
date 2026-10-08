@@ -726,6 +726,403 @@
         ]
       }
     },
+    "/api/v1/finance/status": {
+      "get": {
+        "operationId": "FinanceController_status",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/enable": {
+      "post": {
+        "operationId": "FinanceController_enable",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinanceReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/permissions": {
+      "post": {
+        "operationId": "FinanceController_permission",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PermissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/wallets/{id}": {
+      "post": {
+        "operationId": "FinanceController_configure",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/wallet": {
+      "get": {
+        "operationId": "FinanceController_summary",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/statement": {
+      "get": {
+        "operationId": "FinanceController_statement",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/reservations": {
+      "get": {
+        "operationId": "FinanceController_reservations",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/topups": {
+      "get": {
+        "operationId": "FinanceController_topups",
+        "parameters": [
+          {
+            "name": "establishmentId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      },
+      "post": {
+        "operationId": "FinanceController_topup",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/process": {
+      "post": {
+        "operationId": "FinanceController_process",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/reservations/week": {
+      "post": {
+        "operationId": "FinanceController_reserveWeek",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeekReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/reservations/delivery": {
+      "post": {
+        "operationId": "FinanceController_reserveDelivery",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliveryReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
+    "/api/v1/finance/reservations/{id}/close": {
+      "post": {
+        "operationId": "FinanceController_close",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseReservationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Financeiro de simulação"
+        ]
+      }
+    },
     "/api/v1/deliveries/{id}/navigation": {
       "post": {
         "operationId": "NavigationController_route",
@@ -2435,6 +2832,125 @@
           "longitude",
           "accuracy",
           "observedAt"
+        ]
+      },
+      "FinanceReasonDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "PermissionDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "enabled",
+          "userId"
+        ]
+      },
+      "WalletDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "reason",
+          "enabled"
+        ]
+      },
+      "TopupDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "establishmentId": {
+            "type": "string"
+          },
+          "amountCents": {
+            "type": "string",
+            "description": "Centavos em string decimal, sem casas decimais."
+          },
+          "reference": {
+            "type": "string"
+          },
+          "scenario": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "decline",
+              "timeout_after_accept"
+            ]
+          }
+        },
+        "required": [
+          "reason",
+          "establishmentId",
+          "amountCents",
+          "reference",
+          "scenario"
+        ]
+      },
+      "WeekReservationDto": {
+        "type": "object",
+        "properties": {
+          "versionId": {
+            "type": "string"
+          },
+          "week": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "versionId",
+          "week"
+        ]
+      },
+      "DeliveryReservationDto": {
+        "type": "object",
+        "properties": {
+          "deliveryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "deliveryId"
+        ]
+      },
+      "CloseReservationDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "consumedCents": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "consumedCents"
         ]
       },
       "NavigationDto": {

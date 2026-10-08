@@ -244,3 +244,12 @@ export type {
 
 export type { MapPoint, OperationsMapPin, OperationsMapSnapshot } from './operations-map';
 export * from './position-publisher';
+export { financeMoney } from './finance';
+export type {
+  FinanceStatus,
+  FinanceWalletView,
+  FinancePage,
+  FinanceStatementItem,
+  FinanceReservationView,
+  FinanceTopupView,
+} from './finance';

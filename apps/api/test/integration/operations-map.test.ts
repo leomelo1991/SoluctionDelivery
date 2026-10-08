@@ -1,3 +1,5 @@
+import { RateLimiter } from '../../src/http/security.js';
+import { randomUUID } from 'node:crypto';
 import { before, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
@@ -31,6 +33,7 @@ async function login(slug: string, email: string) {
 before(async () => {
   app = (await createApplication()).app;
   await app.init();
+  app.get(RateLimiter).namespace = 'test-operations-map-' + randomUUID();
   db = app.get(Database);
   f = await fixture(db);
   other = await fixture(db);

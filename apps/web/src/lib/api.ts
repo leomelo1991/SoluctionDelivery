@@ -16,7 +16,9 @@ const pendingKeys = new Map<string, string>();
 export async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
   const mutation = method !== 'GET';
   const identity = path + JSON.stringify(body);
-  const command = mutation && (path.startsWith('/deliveries') || path.startsWith('/contract'));
+  const command =
+    mutation &&
+    (path.startsWith('/deliveries') || path.startsWith('/contract') || path.startsWith('/finance'));
   let key = pendingKeys.get(identity);
   if (command && !key) {
     key = crypto.randomUUID();

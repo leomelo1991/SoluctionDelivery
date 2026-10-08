@@ -1,3 +1,5 @@
+import { FinanceController } from './modules/finance/core.controller.js';
+import { FinanceWorker } from './modules/finance/worker.js';
 import { OperationsMapController } from './modules/operations-map.js';
 import { ContractsController } from './modules/finance/contracts.controller.js';
 import 'reflect-metadata';
@@ -84,8 +86,9 @@ class DashboardModule {}
     AuthModule,
     DashboardModule,
   ],
-  controllers: [HealthController, ContractsController, OperationsMapController],
+  controllers: [HealthController, ContractsController, OperationsMapController, FinanceController],
   providers: [
+    FinanceWorker,
     { provide: APP_GUARD, useClass: SecurityGuard },
     { provide: APP_FILTER, useClass: Errors },
   ],

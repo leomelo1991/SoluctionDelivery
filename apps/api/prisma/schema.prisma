@@ -19,6 +19,7 @@ enum DeliveryStatus {
  delivered
 }
 model Tenant {
+ financeWorkspace FinanceWorkspace?
  id String @id @default(uuid()) @db.Uuid
  slug String @unique
  name String
@@ -41,6 +42,7 @@ model User {
  createdAt DateTime @default(now())
  establishment Establishment? @relation(fields: [tenantId, establishmentId], references: [tenantId, id])
  courier Courier? @relation(fields: [tenantId, courierId], references: [tenantId, id])
+ financePermissions FinancePermission[]
  sessions Session[]
  @@unique([tenantId, id])
  @@unique([tenantId, email])
@@ -72,6 +74,9 @@ model Establishment {
  createdAt DateTime @default(now())
  users User[]
  deliveries Delivery[]
+ financeWallet FinanceWallet?
+ financeReservations FinanceReservation[]
+ financeTopups FinanceTopup[]
  contracts MerchantContract[]
  notes CRMNote[]
  @@unique([tenantId, id])
@@ -117,6 +122,7 @@ model Delivery {
  updatedAt DateTime @updatedAt
  establishment Establishment @relation(fields: [tenantId, establishmentId], references: [tenantId, id])
  courier Courier? @relation(fields: [tenantId, courierId], references: [tenantId, id])
+ financeReservations FinanceReservation[]
  offers DeliveryOffer[]
  events DeliveryEvent[]
  @@unique([tenantId, id])
@@ -266,6 +272,7 @@ model ContractVersion {
  acceptedBy String? @db.Uuid
  acceptanceEvidence String?
  contract MerchantContract @relation(fields: [tenantId, contractId], references: [tenantId, id])
+ financeReservations FinanceReservation[]
  shifts ScheduledShift[]
  @@unique([tenantId, id])
  @@unique([tenantId, contractId, number])
@@ -337,4 +344,160 @@ model MapGeocode {
  expiresAt DateTime
  @@id([tenantId, addressHash])
  @@index([tenantId, expiresAt])
+}
+
+// F2: ambiente financeiro explicitamente simulado, separado do operacional.
+model FinanceWorkspace {
+ tenantId String @id @db.Uuid
+ mode String @default("sandbox")
+ createdAt DateTime @default(now())
+ tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+ permissions FinancePermission[]
+ wallets FinanceWallet[]
+ accounts LedgerAccount[]
+ transactions LedgerTransaction[]
+ operations FinanceOperation[]
+}
+model FinancePermission {
+ tenantId String @db.Uuid
+ userId String @db.Uuid
+ capability String @default("sandbox_manage")
+ workspace FinanceWorkspace @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade)
+ user User @relation(fields: [tenantId, userId], references: [tenantId, id])
+ @@id([tenantId, userId])
+}
+model FinanceWallet {
+ tenantId String @db.Uuid
+ establishmentId String @db.Uuid
+ enabled Boolean @default(true)
+ createdAt DateTime @default(now())
+ workspace FinanceWorkspace @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade)
+ establishment Establishment @relation(fields: [tenantId, establishmentId], references: [tenantId, id])
+ reservations FinanceReservation[]
+ topups FinanceTopup[]
+ @@id([tenantId, establishmentId])
+}
+model LedgerAccount {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ code String
+ kind String
+ currency String @default("BRL")
+ workspace FinanceWorkspace @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade)
+ entries LedgerEntry[]
+ @@unique([tenantId, id])
+ @@unique([tenantId, code])
+}
+model LedgerTransaction {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ source String
+ status String @default("draft")
+ description String
+ actorId String @db.Uuid
+ createdAt DateTime @default(now())
+ workspace FinanceWorkspace @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade)
+ entries LedgerEntry[]
+ @@unique([tenantId, id])
+ @@unique([tenantId, source])
+}
+model LedgerEntry {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ transactionId String @db.Uuid
+ accountId String @db.Uuid
+ // Débito positivo, crédito negativo; soma da transação = zero.
+ amount BigInt
+ transaction LedgerTransaction @relation(fields: [tenantId, transactionId], references: [tenantId, id], onDelete: Cascade)
+ account LedgerAccount @relation(fields: [tenantId, accountId], references: [tenantId, id], onDelete: Cascade)
+ @@index([tenantId, accountId])
+ @@unique([tenantId, transactionId, accountId])
+}
+model FinanceOperation {
+ tenantId String @db.Uuid
+ key String
+ inputHash String
+ response Json
+ createdAt DateTime @default(now())
+ workspace FinanceWorkspace @relation(fields: [tenantId], references: [tenantId], onDelete: Cascade)
+ @@id([tenantId, key])
+}
+model FinanceReservation {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ establishmentId String @db.Uuid
+ source String
+ kind String
+ amount BigInt
+ consumed BigInt @default(0)
+ status String @default("reserved")
+ versionId String? @db.Uuid
+ deliveryId String? @db.Uuid
+ weekStart DateTime?
+ snapshot Json
+ createdAt DateTime @default(now())
+ closedAt DateTime?
+ wallet FinanceWallet @relation(fields: [tenantId, establishmentId], references: [tenantId, establishmentId], onDelete: Cascade, map: "reservation_wallet_fkey")
+ establishment Establishment @relation(fields: [tenantId, establishmentId], references: [tenantId, id])
+ version ContractVersion? @relation(fields: [tenantId, versionId], references: [tenantId, id])
+ delivery Delivery? @relation(fields: [tenantId, deliveryId], references: [tenantId, id])
+ @@unique([tenantId, id])
+ @@unique([tenantId, source])
+ @@index([tenantId, establishmentId, createdAt])
+}
+model FinanceTopup {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ establishmentId String @db.Uuid
+ reference String
+ amount BigInt
+ scenario String
+ status String @default("pending")
+ actorId String @db.Uuid
+ createdAt DateTime @default(now())
+ wallet FinanceWallet @relation(fields: [tenantId, establishmentId], references: [tenantId, establishmentId], onDelete: Cascade, map: "topup_wallet_fkey")
+ establishment Establishment @relation(fields: [tenantId, establishmentId], references: [tenantId, id])
+ receipt FinanceSandboxReceipt?
+ task FinanceTask?
+ events FinanceProviderEvent[]
+ @@unique([tenantId, id])
+ @@unique([tenantId, reference])
+ @@index([tenantId, establishmentId, createdAt])
+}
+model FinanceTask {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ topupId String @db.Uuid
+ status String @default("pending")
+ attempts Int @default(0)
+ leaseToken String? @db.Uuid
+ leaseUntil DateTime?
+ nextAttemptAt DateTime @default(now())
+ errorCode String?
+ createdAt DateTime @default(now())
+ topup FinanceTopup @relation(fields: [tenantId, topupId], references: [tenantId, id], onDelete: Cascade)
+ @@unique([tenantId, topupId])
+ @@index([tenantId, status, nextAttemptAt])
+}
+model FinanceProviderEvent {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ topupId String @db.Uuid
+ provider String @default("fake")
+ environment String @default("sandbox")
+ eventId String
+ inputHash String
+ outcome String
+ createdAt DateTime @default(now())
+ topup FinanceTopup @relation(fields: [tenantId, topupId], references: [tenantId, id], onDelete: Cascade)
+ @@unique([tenantId, provider, environment, eventId])
+}
+
+// Estado durável do PSP falso, independente do lançamento financeiro local.
+model FinanceSandboxReceipt {
+ tenantId String @db.Uuid
+ topupId String @db.Uuid
+ outcome String
+ topup FinanceTopup @relation(fields: [tenantId, topupId], references: [tenantId, id], onDelete: Cascade)
+ @@id([tenantId, topupId])
 }

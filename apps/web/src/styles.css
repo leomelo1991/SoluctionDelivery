@@ -823,3 +823,15 @@ tbody tr:hover {
 .operation-map-list p {
   margin: 4px 0;
 }
+.finance-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.finance-item small {
+  flex-basis: 100%;
+  overflow-wrap: anywhere;
+}

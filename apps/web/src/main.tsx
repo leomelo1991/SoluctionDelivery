@@ -22,6 +22,9 @@ import { api, ApiError, setSession } from './lib/api';
 import { NoticeContext, ActorContext, actorScope } from './lib/query';
 import { Form } from './components/Form';
 import { clearDrafts } from './lib/drafts';
+const FinancePageView = lazy(() =>
+  import('./pages/Finance').then((m) => ({ default: m.FinancePageView })),
+);
 const OperationsMap = lazy(() =>
   import('./pages/OperationsMap').then((m) => ({ default: m.OperationsMap })),
 );
@@ -356,12 +359,14 @@ function Application() {
           ['/admin/usuarios', 'Usuários', UsersIcon],
           ['/admin/precos', 'Fretes e condições', Settings2],
           ['/admin/contratos', 'Contratos e escala', ListChecks],
+          ['/admin/financeiro', 'Financeiro', Settings2],
           ['/admin/auditoria', 'Auditoria', ShieldCheck],
         ] as const)
       : ([
           ['/estabelecimento/entregas', 'Entregas', ListChecks],
           ['/estabelecimento/mapa', 'Mapa da operação', MapPin],
           ['/estabelecimento/contratos', 'Contrato e escala', Building2],
+          ['/estabelecimento/financeiro', 'Financeiro', Settings2],
         ] as const);
   const logout = async () => {
     try {
@@ -480,6 +485,7 @@ function Application() {
                       <Route path="/admin/usuarios" element={<Users user={u} />} />
                       <Route path="/admin/precos" element={<PricingPage />} />
                       <Route path="/admin/contratos" element={<ContractsPage user={u} />} />
+                      <Route path="/admin/financeiro" element={<FinancePageView user={u} />} />
                       <Route path="/admin/auditoria" element={<Audit />} />
                     </>
                   )}
@@ -488,6 +494,10 @@ function Application() {
                       {' '}
                       <Route path="/estabelecimento/entregas" element={<Operations user={u} />} />
                       <Route path="/estabelecimento/mapa" element={<OperationsMap user={u} />} />
+                      <Route
+                        path="/estabelecimento/financeiro"
+                        element={<FinancePageView user={u} />}
+                      />
                       <Route
                         path="/estabelecimento/contratos"
                         element={<ContractsPage user={u} />}

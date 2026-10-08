@@ -20,8 +20,8 @@ export function AsyncSelect({
 }) {
   const [search, setSearch] = useDraftState(draftKey ?? null, '');
   const [page, setPage] = useState(1);
-  const [chosen, setChosen] = useState<{ id: string; name: string } | null>(null);
-  const query = useData<Page<{ id: string; name: string }>>(
+  const [chosen, setChosen] = useState<{ id: string; name?: string; code?: number } | null>(null);
+  const query = useData<Page<{ id: string; name?: string; code?: number }>>(
     source +
       (source.includes('?') ? '&' : '?') +
       new URLSearchParams({ q: search, page: String(page), pageSize: '30' }).toString(),
@@ -53,7 +53,7 @@ export function AsyncSelect({
         )}
         {options.map((o) => (
           <option key={o.id} value={o.id}>
-            {o.name}
+            {o.name ?? (o.code !== undefined ? `Entrega #${o.code}` : o.id)}
           </option>
         ))}
       </select>
