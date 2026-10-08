@@ -30,12 +30,12 @@ Nenhuma variável `VITE_*` precisa conter chaves ou credenciais. `.env`, dados l
 
 1. Crie/importe os dois projetos do repositório e configure seus Root Directories. Obtenha os domínios estáveis de produção.
 2. Configure as variáveis dos dois projetos. `APP_ORIGIN` aponta para os painéis; o destino literal em `apps/web/vercel.json` aponta para o backend.
-3. Aplique as migrações no PostgreSQL do ambiente de destino com `corepack pnpm --filter @solution/api db:migrate`. Execute em uma sessão com as credenciais desse ambiente configuradas. O build não modifica o schema automaticamente.
+3. Aplique as migrações no PostgreSQL do ambiente de destino com `corepack pnpm --filter @solution/api db:migrate`. Execute em uma sessão com as credenciais desse ambiente configuradas. O build de produção da Vercel também executa `db:migrate` depois da compilação; falhas interrompem o deploy. Builds Preview não executam migrations nem seed.
 4. Publique o backend e confirme `/api/v1/health/ready`, que verifica PostgreSQL e Redis. Falhas de autenticação/serviços não devem ser confundidas com deploy saudável apenas porque `/health/live` respondeu.
 5. Publique os painéis e confirme `/api/v1/health/ready` pelo domínio dos painéis, via proxy.
 6. Valide login, cookie Secure/HttpOnly, CSRF, loja, CRM e uma entrega completa. O proxy mantém chamadas no mesmo domínio do navegador; não exige cookies entre domínios nem alteração das proteções de autenticação.
 
-Provisionamento de empresas e primeiro administrador segue [operação](operacao.md). Não execute seed demonstrativo em produção nem publique senhas de demonstração. O app Expo/APK é distribuído separadamente; no APK configure `EXPO_PUBLIC_API_URL=https://DOMINIO-DO-BACKEND/api/v1`.
+Provisionamento de empresas e primeiro administrador segue [operação](operacao.md). Para habilitar dados demonstrativos, siga a seção abaixo; não publique senhas de demonstração. O app Expo/APK é distribuído separadamente; no APK configure `EXPO_PUBLIC_API_URL=https://DOMINIO-DO-BACKEND/api/v1`.
 
 ## Validação e estado
 
@@ -66,3 +66,17 @@ Associe um Upstash Redis ao backend e use as variáveis privadas `UPSTASH_REDIS_
 Na sessão em que este pacote foi preparado, o envio GitHub foi negado porque a ferramenta exigiu aprovação e a política da sessão é never. Os plugins Vercel e Neon foram encontrados, mas não estavam instalados/conectados. Portanto, nenhum banco Neon, Redis Upstash, projeto Vercel ou deploy remoto foi criado ou alegado como criado. O bundle registra o código pronto para prosseguir em uma sessão com acesso de publicação.
 
 Referências: [Neon no Marketplace](https://vercel.com/marketplace/neon/neon), [Upstash no Marketplace](https://vercel.com/marketplace/upstash) e [REST API Upstash](https://upstash.com/docs/redis/features/restapi).
+
+## Demo no deploy de produção
+
+No projeto **da API**, configure estas variáveis apenas no ambiente **Production**:
+
+- `ALLOW_DEMO_SEED=true`
+- `ALLOW_PRODUCTION_DEMO_SEED=true`
+- `DEMO_PASSWORD`: senha inicial de 12 a 128 caracteres, cadastrada como segredo. Cole o valor puro no painel da Vercel, sem aspas adicionais.
+
+Mantenha `DATABASE_URL`, Redis e `APP_ORIGIN` configurados. Remova overrides antigos de Build Command para usar o comando de `apps/api/vercel.json`: `corepack pnpm db:generate && corepack pnpm build && node dist/scripts/vercel-release.js`. Faça Redeploy do projeto da API.
+
+O build aplica migrations e, quando autorizado, cria a empresa `demo`, os usuários `admin@example.test`, `loja@example.test`, `entregador@example.test`, uma loja, um entregador e tarifas/região de exemplo. Todos os usuários exigem troca da senha inicial. O seed não cria entregas.
+
+A criação é transacional e serializada entre builds concorrentes. Se a empresa `demo` já existir, o seed termina com sucesso sem alterar registros ou senhas, nem preencher dados faltantes. Para uma empresa já provisionada, cadastre os demais dados pelo painel. Alterar `DEMO_PASSWORD` não redefine senhas existentes. Após a primeira execução, remova as três variáveis do seed; os cadastros permanecem no banco.

@@ -28,7 +28,7 @@ ALLOW_DEMO_SEED=true corepack pnpm seed:demo
 unset DEMO_PASSWORD
 ```
 
-Empresa `demo`; usuários `admin@example.test`, `loja@example.test` e `entregador@example.test`. Todos exigem troca da senha inicial. Seed é opcional, não sobrescreve cadastros e é proibido em produção.
+Empresa `demo`; usuários `admin@example.test`, `loja@example.test` e `entregador@example.test`. Todos exigem troca da senha inicial. Seed é opcional, não sobrescreve cadastros e em produção exige autorização adicional; veja [deploy Vercel](docs/deploy-vercel.md).
 
 Para provisionar uma empresa real, use o [guia operacional](docs/operacao.md). Nenhuma credencial de produção é incluída no projeto.
 

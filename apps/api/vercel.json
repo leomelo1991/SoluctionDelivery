@@ -2,6 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nestjs",
   "installCommand": "corepack pnpm install --frozen-lockfile",
-  "buildCommand": "corepack pnpm db:generate && corepack pnpm build",
+  "buildCommand": "corepack pnpm db:generate && corepack pnpm build && node dist/scripts/vercel-release.js",
   "regions": ["gru1"]
 }
