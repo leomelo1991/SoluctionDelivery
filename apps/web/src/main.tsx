@@ -15,6 +15,10 @@ import {
   Users as UsersIcon,
   X,
   WifiOff,
+  PackageCheck,
+  Navigation,
+  Wallet,
+  CalendarDays,
 } from 'lucide-react';
 import type { User } from '@solution/contracts';
 import { Brand, Button, Card, Loading, ErrorState } from '@solution/ui';
@@ -46,6 +50,7 @@ import '@fontsource/manrope/latin-700.css';
 import '@fontsource/manrope/latin-800.css';
 import '@solution/ui/styles.css';
 import './styles.css';
+import './design.css';
 const client = new QueryClient({
   defaultOptions: { queries: { staleTime: 3000, retry: false }, mutations: { retry: false } },
 });
@@ -118,22 +123,55 @@ function Login({ onLogin }: { onLogin: (user: User) => void }) {
         <Brand />
         <p className="eyebrow">LOGÍSTICA COM CLAREZA</p>
         <h1>
-          Uma operação.
+          Sua operação,
           <br />
-          Todas as entregas conectadas.
+          <span>na direção certa.</span>
         </h1>
-        <p>Estabelecimentos, entregadores e gestão no mesmo fluxo.</p>
+        <p>
+          Da primeira solicitação à última entrega. Mais clareza para sua equipe, mais controle para
+          sua operação.
+        </p>
         <div className="login-illustration" aria-hidden="true">
-          <span>Solicitação</span>
-          <i />
-          <span>Coleta</span>
-          <i />
-          <span>Entrega</span>
+          <div className="route-step">
+            <span>
+              <Building2 size={20} />
+            </span>
+            <div>
+              <small>01 · SOLICITAÇÃO</small>
+              <strong>Pedido recebido</strong>
+            </div>
+            <PackageCheck size={18} />
+          </div>
+          <div className="route-connector" />
+          <div className="route-step">
+            <span>
+              <Bike size={20} />
+            </span>
+            <div>
+              <small>02 · COLETA</small>
+              <strong>Entregador a caminho</strong>
+            </div>
+            <Navigation size={18} />
+          </div>
+          <div className="route-connector" />
+          <div className="route-step">
+            <span>
+              <MapPin size={20} />
+            </span>
+            <div>
+              <small>03 · ENTREGA</small>
+              <strong>Destino alcançado</strong>
+            </div>
+            <PackageCheck size={18} />
+          </div>
         </div>
+        <p className="login-caption">
+          <ShieldCheck size={16} /> Uma plataforma. Toda a sua operação.
+        </p>
       </div>
       <Card className="login-card">
         <div className="row">
-          <h2>Entre na sua operação</h2>
+          <h2>Bem-vindo de volta</h2>
           <Theme />
         </div>
         <p className="muted">Use os dados fornecidos pelo administrador.</p>
@@ -141,9 +179,28 @@ function Login({ onLogin }: { onLogin: (user: User) => void }) {
           draftKey="access"
           persistAnonymous
           fields={[
-            { name: 'tenant', label: 'Identificador da empresa', min: 2, max: 80 },
-            { name: 'email', label: 'E-mail', kind: 'email' },
-            { name: 'password', label: 'Senha', kind: 'password', max: 128 },
+            {
+              name: 'tenant',
+              label: 'Identificador da empresa',
+              min: 2,
+              max: 80,
+              placeholder: 'Identificador fornecido pela sua empresa',
+              autoComplete: 'organization',
+            },
+            {
+              name: 'email',
+              label: 'E-mail',
+              kind: 'email',
+              placeholder: 'voce@empresa.com.br',
+              autoComplete: 'username',
+            },
+            {
+              name: 'password',
+              label: 'Senha',
+              kind: 'password',
+              max: 128,
+              autoComplete: 'current-password',
+            },
           ]}
           submitLabel="Entrar"
           onSubmit={async (b) => {
@@ -273,7 +330,10 @@ function Application() {
   const [mobile, setMobile] = useState(() => window.matchMedia('(max-width:1023px)').matches);
   useEffect(() => {
     const media = window.matchMedia('(max-width:1023px)');
-    const change = () => setMobile(media.matches);
+    const change = () => {
+      setMobile(media.matches);
+      if (!media.matches) setDrawer(false);
+    };
     media.addEventListener('change', change);
     return () => media.removeEventListener('change', change);
   }, []);
@@ -288,6 +348,20 @@ function Application() {
     document.querySelector<HTMLButtonElement>('.drawer-close')?.focus();
     const escape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setDrawer(false);
+      if (event.key === 'Tab') {
+        const controls = document.querySelectorAll<HTMLElement>(
+          '.sidebar a[href], .sidebar button:not([disabled])',
+        );
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
     };
     document.addEventListener('keydown', escape);
     return () => {
@@ -351,23 +425,25 @@ function Application() {
   const nav =
     u.role === 'admin'
       ? ([
-          ['/admin', 'Visão geral', LayoutDashboard],
-          ['/admin/entregas', 'Entregas', ListChecks],
-          ['/admin/mapa', 'Mapa da operação', MapPin],
-          ['/admin/estabelecimentos', 'Estabelecimentos', Building2],
-          ['/admin/entregadores', 'Entregadores', Bike],
-          ['/admin/usuarios', 'Usuários', UsersIcon],
-          ['/admin/precos', 'Fretes e condições', Settings2],
-          ['/admin/contratos', 'Contratos e escala', ListChecks],
-          ['/admin/financeiro', 'Financeiro', Settings2],
-          ['/admin/auditoria', 'Auditoria', ShieldCheck],
+          ['/admin', 'Visão geral', LayoutDashboard, 'Operação'],
+          ['/admin/entregas', 'Entregas', ListChecks, 'Operação'],
+          ['/admin/mapa', 'Mapa da operação', MapPin, 'Operação'],
+          ['/admin/estabelecimentos', 'Estabelecimentos', Building2, 'Rede de parceiros'],
+          ['/admin/entregadores', 'Entregadores', Bike, 'Rede de parceiros'],
+          ['/admin/usuarios', 'Usuários', UsersIcon, 'Administração'],
+          ['/admin/precos', 'Fretes e condições', Settings2, 'Comercial e financeiro'],
+          ['/admin/contratos', 'Contratos e escala', CalendarDays, 'Comercial e financeiro'],
+          ['/admin/financeiro', 'Financeiro', Wallet, 'Comercial e financeiro'],
+          ['/admin/auditoria', 'Auditoria', ShieldCheck, 'Administração'],
         ] as const)
       : ([
-          ['/estabelecimento/entregas', 'Entregas', ListChecks],
-          ['/estabelecimento/mapa', 'Mapa da operação', MapPin],
-          ['/estabelecimento/contratos', 'Contrato e escala', Building2],
-          ['/estabelecimento/financeiro', 'Financeiro', Settings2],
+          ['/estabelecimento/entregas', 'Entregas', ListChecks, 'Operação'],
+          ['/estabelecimento/mapa', 'Mapa da operação', MapPin, 'Operação'],
+          ['/estabelecimento/contratos', 'Contrato e escala', CalendarDays, 'Gestão'],
+          ['/estabelecimento/financeiro', 'Financeiro', Wallet, 'Gestão'],
         ] as const);
+  const navGroups = [...new Set(nav.map((item) => item[3]))];
+  const currentPage = nav.find(([path]) => path === location.pathname)?.[1] ?? 'Operação';
   const logout = async () => {
     try {
       await signOut();
@@ -379,6 +455,9 @@ function Application() {
     <ActorContext.Provider key={actorScope(u)} value={u}>
       <NoticeContext.Provider value={(text, error = false) => setNotice({ text, error })}>
         <div className={courier ? 'courier-shell' : 'app-shell'}>
+          <a className="skip-link" href="#main-content">
+            Ir para o conteúdo
+          </a>
           {!courier && (
             <>
               {drawer && (
@@ -389,6 +468,7 @@ function Application() {
                 />
               )}
               <aside
+                id="main-navigation"
                 className={`sidebar ${drawer ? 'open' : ''}`}
                 aria-hidden={mobile && !drawer}
                 inert={mobile && !drawer}
@@ -404,19 +484,28 @@ function Application() {
                     <X size={20} />
                   </Button>
                 </div>
-                <p className="nav-label">{u.role === 'admin' ? 'GESTÃO DA EMPRESA' : 'OPERAÇÃO'}</p>
-                <nav>
-                  {nav.map(([path, label, Icon]) => (
-                    <NavLink key={path} to={path} end={path === '/admin'}>
-                      <Icon size={19} />
-                      {label}
-                    </NavLink>
+                <nav aria-label="Navegação principal">
+                  {navGroups.map((group) => (
+                    <div className="nav-group" key={group}>
+                      <p className="nav-label">{group}</p>
+                      {nav
+                        .filter((item) => item[3] === group)
+                        .map(([path, label, Icon]) => (
+                          <NavLink key={path} to={path} end={path === '/admin'}>
+                            <Icon size={19} aria-hidden="true" />
+                            <span>{label}</span>
+                          </NavLink>
+                        ))}
+                    </div>
                   ))}
                 </nav>
                 <div className="sidebar-note">
-                  Cada etapa registrada.
-                  <br />
-                  Toda a operação conectada.
+                  <Navigation size={18} aria-hidden="true" />
+                  <span>
+                    Mais clareza.
+                    <br />
+                    Mais controle.
+                  </span>
                 </div>
                 <div className="account">
                   <span className="avatar">{u.name.slice(0, 2).toUpperCase()}</span>
@@ -439,11 +528,18 @@ function Application() {
                     variant="ghost"
                     aria-label="Abrir menu"
                     aria-expanded={drawer}
+                    aria-controls="main-navigation"
                     onClick={() => setDrawer(true)}
                   >
                     <Menu size={22} />
                   </Button>
-                  <span>{u.tenantName}</span>
+                  <div className="workspace-identity">
+                    <strong>{u.tenantName}</strong>
+                    <span>
+                      {u.role === 'admin' ? 'Administração' : 'Estabelecimento'}{' '}
+                      <span aria-hidden="true">/</span> {currentPage}
+                    </span>
+                  </div>
                 </div>
               )}
               <div className="actions">
@@ -466,7 +562,11 @@ function Application() {
                 Sem conexão. As ações dependem da confirmação do servidor.
               </div>
             )}
-            <main className={courier ? 'courier-main' : 'workspace'}>
+            <main
+              id="main-content"
+              tabIndex={-1}
+              className={courier ? 'courier-main' : 'workspace'}
+            >
               <Suspense fallback={<Loading />}>
                 <Routes>
                   {u.role === 'admin' && (

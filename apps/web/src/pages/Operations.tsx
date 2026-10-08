@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import { useDraftState } from '../lib/drafts';
-import { Plus, Search } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Bike,
+  CheckCheck,
+  Wallet,
+  Package,
+  MapPin,
+  ArrowUpRight,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 import type { Dashboard, Delivery, Establishment, Page, User } from '@solution/contracts';
 import { money, dateTime, today } from '@solution/contracts';
 import { Button, Empty, ErrorState, Loading, Metric, Pagination, Status } from '@solution/ui';
@@ -38,6 +48,12 @@ export function Operations({ user, overview = false }: { user: User; overview?: 
   );
   const action = useAction();
   const d = dashboard.data;
+  const hasFilters = search.trim().length > 0 || status.length > 0;
+  const resetFilters = () => {
+    setSearch('');
+    setStatus('');
+    setPage(1);
+  };
   return (
     <div className="stack page-stack">
       <div className="page-heading">
@@ -87,6 +103,22 @@ export function Operations({ user, overview = false }: { user: User; overview?: 
           </Button>
         </div>
       </div>
+      {overview && (
+        <section className="operation-banner">
+          <div className="banner-icon" aria-hidden="true">
+            <MapPin size={28} />
+          </div>
+          <div>
+            <p className="eyebrow">SUA CENTRAL DE CONTROLE</p>
+            <h2>Uma visão clara de cada entrega.</h2>
+            <p>Consulte o mapa e acompanhe as posições disponíveis da sua operação.</p>
+          </div>
+          <Link className="button secondary" to="/admin/mapa">
+            <MapPin size={18} aria-hidden="true" /> Abrir mapa{' '}
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </Link>
+        </section>
+      )}
       <div className="period">
         <span>Período dos indicadores</span>
         <label>
@@ -111,19 +143,56 @@ export function Operations({ user, overview = false }: { user: User; overview?: 
             label="Em andamento"
             value={d?.active ?? '—'}
             context="Todas as entregas ativas"
+            icon={<Package size={20} />}
+            tone="warning"
           />
-          <Metric label="Concluídas" value={d?.delivered ?? '—'} context="No período selecionado" />
+          <Metric
+            label="Concluídas"
+            value={d?.delivered ?? '—'}
+            context="No período selecionado"
+            icon={<CheckCheck size={20} />}
+            tone="positive"
+          />
           <Metric
             label="Fretes em andamento"
             value={d ? money(d.activeFreightCents) : '—'}
             context="Valores previstos"
+            icon={<Bike size={20} />}
           />
           <Metric
             label="Fretes concluídos"
             value={d ? money(d.completedFreightCents ?? 0) : '—'}
             context="Sem deduzir custos ou repasses"
+            icon={<Wallet size={20} />}
           />
         </div>
+      )}
+      {overview && d && (
+        <section className="card flow-summary" aria-label="Entregas ativas por etapa">
+          <div className="row">
+            <h3>Fluxo da operação</h3>
+            <span className="muted">Entregas ativas agora</span>
+          </div>
+          <div className="flow-stages">
+            {(
+              [
+                ['Aguardando', ['waiting', 'assigned']],
+                ['Em coleta', ['accepted', 'arrived']],
+                ['Em rota', ['collected']],
+              ] as const
+            ).map(([label, stages], index) => (
+              <div key={label}>
+                <span className={`flow-dot flow-dot-${index}`} aria-hidden="true" />
+                <span>{label}</span>
+                <strong>
+                  {d.stages
+                    .filter((item) => (stages as readonly string[]).includes(item.status))
+                    .reduce((sum, item) => sum + item.count, 0)}
+                </strong>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
       {overview && d && (
         <div className="overview-grid">
@@ -185,6 +254,7 @@ export function Operations({ user, overview = false }: { user: User; overview?: 
         <div className="segmented">
           <button
             className={view === 'active' ? 'selected' : ''}
+            aria-pressed={view === 'active'}
             onClick={() => {
               setView('active');
               setStatus('');
@@ -195,6 +265,7 @@ export function Operations({ user, overview = false }: { user: User; overview?: 
           </button>
           <button
             className={view === 'delivered' ? 'selected' : ''}
+            aria-pressed={view === 'delivered'}
             onClick={() => {
               setView('delivered');
               setStatus('');
@@ -245,20 +316,50 @@ export function Operations({ user, overview = false }: { user: User; overview?: 
           </select>
         )}
       </div>
+      {hasFilters && (
+        <div className="filter-summary">
+          <span>Filtros aplicados{search.trim() ? ` · “${search.trim()}”` : ''}</span>
+          <Button variant="ghost" onClick={resetFilters}>
+            Limpar filtros
+          </Button>
+        </div>
+      )}
       {deliveries.isLoading ? (
         <Loading />
       ) : deliveries.error ? (
         <ErrorState message={deliveries.error.message} retry={() => void deliveries.refetch()} />
       ) : !deliveries.data?.items.length ? (
         <Empty
-          title="Nenhuma entrega encontrada"
-          description="Novas solicitações aparecerão aqui com o andamento atualizado."
+          title={
+            hasFilters
+              ? 'Nenhuma entrega para estes filtros'
+              : view === 'delivered'
+                ? 'Nenhuma entrega concluída no período'
+                : 'Sua próxima entrega começa aqui'
+          }
+          description={
+            hasFilters
+              ? 'Experimente outro nome, número ou etapa.'
+              : view === 'delivered'
+                ? 'Selecione outro período para consultar o histórico.'
+                : 'Crie uma solicitação e acompanhe cada etapa da operação.'
+          }
+          action={
+            hasFilters || view === 'active' ? (
+              <Button
+                variant={hasFilters ? 'secondary' : 'primary'}
+                onClick={hasFilters ? resetFilters : () => setCreating(true)}
+              >
+                {hasFilters ? 'Limpar filtros' : 'Nova entrega'}
+              </Button>
+            ) : undefined
+          }
         />
       ) : user.role === 'establishment' && view === 'active' ? (
         <DeliveryBoard items={deliveries.data.items} user={user} onDetails={setDetail} />
       ) : (
         <div className="table-scroll">
-          <table>
+          <table className="delivery-table">
             <thead>
               <tr>
                 <th>Entrega</th>
@@ -272,20 +373,22 @@ export function Operations({ user, overview = false }: { user: User; overview?: 
             <tbody>
               {deliveries.data.items.map((item) => (
                 <tr key={item.id}>
-                  <td>
+                  <td data-label="Entrega">
                     <strong>#{item.code}</strong>
                     <small>{dateTime(item.createdAt)}</small>
                   </td>
-                  <td>
+                  <td data-label="Estabelecimento / destinatário">
                     {item.establishment.name}
                     <small>{item.recipientName}</small>
                   </td>
-                  <td>{item.courier?.name ?? 'Não atribuído'}</td>
-                  <td>
+                  <td data-label="Entregador">{item.courier?.name ?? 'Não atribuído'}</td>
+                  <td data-label="Etapa">
                     <DeliveryStatus status={item.status} />
                   </td>
-                  <td className="numeric">{money(item.feeCents)}</td>
-                  <td>
+                  <td data-label="Frete" className="numeric">
+                    {money(item.feeCents)}
+                  </td>
+                  <td className="delivery-table-action">
                     <Button variant="secondary" onClick={() => setDetail(item.id)}>
                       Detalhes
                     </Button>

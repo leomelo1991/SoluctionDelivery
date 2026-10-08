@@ -5,9 +5,15 @@ export function Brand() {
   return (
     <div className="brand">
       <svg viewBox="0 0 40 40" aria-hidden="true">
-        <circle cx="20" cy="20" r="20" fill="var(--ink)" />
-        <circle cx="20" cy="20" r="12" fill="none" stroke="var(--bg)" strokeWidth="3" />
-        <circle cx="20" cy="20" r="5" fill="var(--accent)" />
+        <rect width="40" height="40" rx="12" fill="var(--action)" />
+        <path
+          d="M12 13h10a7 7 0 0 1 0 14h-9m0-7h12m-4-4 4 4-4 4"
+          fill="none"
+          stroke="var(--on-action)"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
       </svg>
       <span>
         <strong>Solution</strong>
@@ -69,14 +75,25 @@ export function Metric({
   label,
   value,
   context,
+  icon,
+  tone = 'neutral',
 }: {
   label: string;
   value: ReactNode;
   context?: ReactNode;
+  icon?: ReactNode;
+  tone?: 'neutral' | 'positive' | 'warning';
 }) {
   return (
-    <Card className="metric">
-      <span>{label}</span>
+    <Card className={`metric metric-${tone}`}>
+      <div className="metric-heading">
+        <span>{label}</span>
+        {icon && (
+          <span className="metric-icon" aria-hidden="true">
+            {icon}
+          </span>
+        )}
+      </div>
       <strong>{value}</strong>
       {context && <small>{context}</small>}
     </Card>
@@ -94,7 +111,16 @@ export function Empty({
   return (
     <div className="empty">
       <span className="empty-symbol" aria-hidden="true">
-        ○
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path d="m3 7 9-4 9 4v10l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v10M7.5 5l9 4" />
+        </svg>
       </span>
       <h3>{title}</h3>
       {description && <p>{description}</p>}
@@ -105,6 +131,7 @@ export function Empty({
 export function Loading() {
   return (
     <div className="loading" role="status">
+      <span className="loading-spinner" aria-hidden="true" />
       Carregando informações…
     </div>
   );

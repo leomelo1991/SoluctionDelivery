@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +27,8 @@ export interface FormField {
   options?: { value: string; label: string }[];
   full?: boolean;
   default?: string | number;
+  autoComplete?: string;
+  placeholder?: string;
 }
 export type Values = Record<string, string | number | undefined>;
 const schemaFor = (f: FormField) => {
@@ -77,6 +80,7 @@ export function Form({
   clearDraftOnSubmit?: boolean;
   persistAnonymous?: boolean;
 }) {
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
   const scopedKey = useDraftKey(draftKey ?? '', persistAnonymous);
   const storageKey = draftKey ? scopedKey : null;
   const draft = storageKey ? readDraft<Record<string, string>>(storageKey, {}) : {};
@@ -155,7 +159,12 @@ export function Form({
               )}
             />
           ) : f.kind === 'select' ? (
-            <select id={`f-${f.name}`} {...register(f.name)}>
+            <select
+              id={`f-${f.name}`}
+              aria-invalid={!!errors[f.name]}
+              aria-describedby={errors[f.name] ? `f-${f.name}-error` : undefined}
+              {...register(f.name)}
+            >
               {f.required !== false && <option value="">Selecione</option>}
               {f.options?.map((o) => (
                 <option key={o.value} value={o.value}>
@@ -164,36 +173,67 @@ export function Form({
               ))}
             </select>
           ) : f.kind === 'textarea' ? (
-            <textarea id={`f-${f.name}`} {...register(f.name)} />
-          ) : (
-            <input
+            <textarea
               id={`f-${f.name}`}
-              type={
-                ['money', 'percent', 'km', 'number'].includes(f.kind ?? '')
-                  ? 'number'
-                  : (f.kind ?? 'text')
-              }
-              step={
-                f.kind === 'number'
-                  ? '1'
-                  : f.kind === 'km'
-                    ? '0.001'
-                    : ['money', 'percent'].includes(f.kind ?? '')
-                      ? '0.01'
-                      : undefined
-              }
-              min={
-                ['money', 'percent', 'km', 'number'].includes(f.kind ?? '')
-                  ? (f.min ?? 0)
-                  : undefined
-              }
-              max={f.max}
-              autoComplete={f.kind === 'password' ? 'new-password' : undefined}
+              placeholder={f.placeholder}
               aria-invalid={!!errors[f.name]}
+              aria-describedby={errors[f.name] ? `f-${f.name}-error` : undefined}
               {...register(f.name)}
             />
+          ) : (
+            <div className={f.kind === 'password' ? 'password-input' : 'input-wrap'}>
+              <input
+                id={`f-${f.name}`}
+                type={
+                  ['money', 'percent', 'km', 'number'].includes(f.kind ?? '')
+                    ? 'number'
+                    : f.kind === 'password' && visiblePasswords[f.name]
+                      ? 'text'
+                      : (f.kind ?? 'text')
+                }
+                step={
+                  f.kind === 'number'
+                    ? '1'
+                    : f.kind === 'km'
+                      ? '0.001'
+                      : ['money', 'percent'].includes(f.kind ?? '')
+                        ? '0.01'
+                        : undefined
+                }
+                min={
+                  ['money', 'percent', 'km', 'number'].includes(f.kind ?? '')
+                    ? (f.min ?? 0)
+                    : undefined
+                }
+                max={f.max}
+                autoComplete={
+                  f.autoComplete ?? (f.kind === 'password' ? 'new-password' : undefined)
+                }
+                placeholder={f.placeholder}
+                aria-invalid={!!errors[f.name]}
+                aria-describedby={errors[f.name] ? `f-${f.name}-error` : undefined}
+                {...register(f.name)}
+              />
+              {f.kind === 'password' && (
+                <button
+                  type="button"
+                  className="password-toggle"
+                  aria-label={visiblePasswords[f.name] ? 'Ocultar senha' : 'Mostrar senha'}
+                  aria-pressed={!!visiblePasswords[f.name]}
+                  onClick={() =>
+                    setVisiblePasswords((current) => ({ ...current, [f.name]: !current[f.name] }))
+                  }
+                >
+                  {visiblePasswords[f.name] ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              )}
+            </div>
           )}{' '}
-          {errors[f.name] && <span className="field-error">{String(errors[f.name]?.message)}</span>}
+          {errors[f.name] && (
+            <span className="field-error" id={`f-${f.name}-error`}>
+              {String(errors[f.name]?.message)}
+            </span>
+          )}
         </div>
       ))}
       {children}
