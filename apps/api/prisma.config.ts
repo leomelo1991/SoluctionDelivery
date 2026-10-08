@@ -5,10 +5,11 @@ loadEnv({
   quiet: true,
 });
 import { defineConfig } from 'prisma/config';
+import { migrationDatabaseUrl } from './scripts/migration-url.js';
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: { path: 'prisma/migrations' },
   datasource: {
-    url: process.env.DATABASE_URL ?? 'postgresql://solution:solution@localhost:5432/solution',
+    url: migrationDatabaseUrl(process.env),
   },
 });

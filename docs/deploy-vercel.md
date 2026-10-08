@@ -82,3 +82,9 @@ O build aplica migrations e, quando autorizado, cria a empresa `demo`, os usuár
 A criação é transacional e serializada entre builds concorrentes. Se a empresa `demo` já existir, o seed termina com sucesso sem alterar registros ou senhas, nem preencher dados faltantes. Para uma empresa já provisionada, cadastre os demais dados pelo painel. Alterar `DEMO_PASSWORD` não redefine senhas existentes. Após a primeira execução, remova as três variáveis do seed; os cadastros permanecem no banco.
 
 Para uma apresentação com histórico, CRM e pedidos em andamento, veja a [base fictícia para investidores](apresentacao-investidores.md). A ativação adicional usa `SEED_INVESTORS=true` e uma empresa separada.
+
+## Migration com timeout P1002 no Neon
+
+Configure `DATABASE_URL_UNPOOLED` no projeto da API (Production) com a conexão direta fornecida pelo Neon, cujo hostname não contém `-pooler`. Mantenha `sslmode=require`. A aplicação continua usando `DATABASE_URL` pooled. O Prisma CLI prioriza `DATABASE_URL_UNPOOLED`, depois `DIRECT_URL`, `POSTGRES_URL_NON_POOLING` e, na ausência delas, `DATABASE_URL`. Todos esses endereços devem corresponder ao mesmo banco/branch.
+
+Se o log mostrar timeout ao adquirir o advisory lock, verifique se há outro deploy executando migrations. Aguarde sua conclusão ou cancele o deploy redundante antes de fazer um único Redeploy. A conexão direta evita problemas de locks de sessão com o pooler, mas não remove um lock mantido por outra migration. Não desabilite os advisory locks nem execute reset do banco.
