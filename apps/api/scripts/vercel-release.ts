@@ -5,9 +5,11 @@ if (process.env.VERCEL_ENV !== 'production') {
   console.log('Preview: migrations e seed não são executados.');
 } else {
   const seed = process.env.ALLOW_DEMO_SEED === 'true';
-  if (seed) demoPassword({ ...process.env, NODE_ENV: 'production' });
+  const investors = process.env.SEED_INVESTORS === 'true';
+  if (seed || investors) demoPassword({ ...process.env, NODE_ENV: 'production' });
   const commands = [['corepack', 'pnpm', 'db:migrate']];
   if (seed) commands.push([process.execPath, 'dist/scripts/seed-demo.js']);
+  if (investors) commands.push([process.execPath, 'dist/scripts/seed-investors.js']);
   for (const [command, ...args] of commands) {
     const result = spawnSync(command!, args, {
       stdio: 'inherit',

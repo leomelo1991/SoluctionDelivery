@@ -21,7 +21,8 @@
     "test:mobile": "pnpm --filter @solution/mobile test",
     "mobile:remote": "pnpm --filter @solution/mobile remote",
     "seed:deliveries": "pnpm --filter @solution/api seed:deliveries",
-    "mobile:tunnel": "pnpm --filter @solution/mobile start --tunnel --go --port 8082 --max-workers 2"
+    "mobile:tunnel": "pnpm --filter @solution/mobile start --tunnel --go --port 8082 --max-workers 2",
+    "seed:investors": "pnpm --filter @solution/api seed:investors"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

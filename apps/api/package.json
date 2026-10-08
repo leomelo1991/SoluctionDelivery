@@ -13,7 +13,8 @@
     "provision": "tsx scripts/provision.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "openapi": "tsc && node dist/scripts/openapi.js",
-    "seed:deliveries": "node --import tsx scripts/seed-deliveries.ts"
+    "seed:deliveries": "node --import tsx scripts/seed-deliveries.ts",
+    "seed:investors": "tsx scripts/seed-investors.ts"
   },
   "dependencies": {
     "@nestjs/common": "11.2.7",

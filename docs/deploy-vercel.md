@@ -80,3 +80,5 @@ Mantenha `DATABASE_URL`, Redis e `APP_ORIGIN` configurados. Remova overrides ant
 O build aplica migrations e, quando autorizado, cria a empresa `demo`, os usuários `admin@example.test`, `loja@example.test`, `entregador@example.test`, uma loja, um entregador e tarifas/região de exemplo. Todos os usuários exigem troca da senha inicial. O seed não cria entregas.
 
 A criação é transacional e serializada entre builds concorrentes. Se a empresa `demo` já existir, o seed termina com sucesso sem alterar registros ou senhas, nem preencher dados faltantes. Para uma empresa já provisionada, cadastre os demais dados pelo painel. Alterar `DEMO_PASSWORD` não redefine senhas existentes. Após a primeira execução, remova as três variáveis do seed; os cadastros permanecem no banco.
+
+Para uma apresentação com histórico, CRM e pedidos em andamento, veja a [base fictícia para investidores](apresentacao-investidores.md). A ativação adicional usa `SEED_INVESTORS=true` e uma empresa separada.
