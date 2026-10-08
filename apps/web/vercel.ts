@@ -10,7 +10,7 @@ if (
   api.hash
 )
   throw new Error('API_ORIGIN deve conter somente a origem HTTPS da API, sem /api/v1.');
-export const config = {
+export default {
   framework: 'vite',
   installCommand: 'corepack pnpm install --frozen-lockfile',
   buildCommand: 'corepack pnpm build',

@@ -7,7 +7,7 @@ O monorepo publica dois projetos independentes do mesmo repositório. Os painéi
 | Painéis | `apps/web`     | Vite      | `dist`          |
 | Backend | `apps/api`     | NestJS    | Vercel Function |
 
-Use Node 24. Habilite o acesso a arquivos fora de Root Directory para os pacotes compartilhados e o lockfile do monorepo. `apps/api/vercel.json` gera o Prisma Client antes do build e usa a região São Paulo (`gru1`). `apps/web/vercel.mjs` define o proxy da API e o fallback das rotas React.
+Use Node 24. Habilite o acesso a arquivos fora de Root Directory para os pacotes compartilhados e o lockfile do monorepo. `apps/api/vercel.json` gera o Prisma Client antes do build e usa a região São Paulo (`gru1`). `apps/web/vercel.ts` define o proxy da API e o fallback das rotas React.
 
 ## Variáveis
 
@@ -20,7 +20,7 @@ No projeto backend, configure para o ambiente publicado:
 - `DB_POOL_MAX=2`: limite inicial por instância; ajuste conforme capacidade do banco e tráfego.
 - `GOOGLE_MAPS_KEY` e/ou `MAPBOX_TOKEN`: opcionais para serviços de rotas; nunca publique segredos no frontend.
 
-No projeto dos painéis, configure `API_ORIGIN` com a origem HTTPS do projeto backend, sem `/api/v1`. Esse valor alimenta a configuração da Vercel, e não o bundle React. Ausência ou endereço inválido interrompe a configuração para evitar publicar painéis com um proxy inválido.
+No projeto dos painéis, configure `API_ORIGIN` com a origem HTTPS do projeto backend, sem `/api/v1`. Esse valor alimenta a configuração da Vercel, e não o bundle React. Ausência ou endereço inválido interrompe a configuração para evitar publicar painéis com um proxy inválido. A configuração usa `vercel.ts` com exportação padrão, executada pelo compilador da Vercel para resolver `API_ORIGIN`. Não renomeie esse arquivo para `.mjs`: a leitura estática usada no deploy Git pode omitir destinos calculados e causar o erro `rewrites[0] missing required property destination`.
 
 Nenhuma variável `VITE_*` precisa conter chaves ou credenciais. `.env`, dados locais, credenciais de contas, dependências e bundles não entram no repositório. PostgreSQL e Redis do Docker local não são alcançáveis pelas Functions da Vercel.
 
