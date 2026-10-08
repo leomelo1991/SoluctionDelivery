@@ -7,7 +7,7 @@ O monorepo publica dois projetos independentes do mesmo repositório. Os painéi
 | Painéis | `apps/web`     | Vite      | `dist`          |
 | Backend | `apps/api`     | NestJS    | Vercel Function |
 
-Use Node 24. Habilite o acesso a arquivos fora de Root Directory para os pacotes compartilhados e o lockfile do monorepo. `apps/api/vercel.json` gera o Prisma Client antes do build e usa a região São Paulo (`gru1`). `apps/web/vercel.ts` define o proxy da API e o fallback das rotas React.
+Use Node 24. Habilite o acesso a arquivos fora de Root Directory para os pacotes compartilhados e o lockfile do monorepo. `apps/api/vercel.json` gera o Prisma Client antes do build e usa a região São Paulo (`gru1`). `apps/web/vercel.json` define o proxy da API e o fallback das rotas React com destinos literais.
 
 ## Variáveis
 
@@ -20,14 +20,16 @@ No projeto backend, configure para o ambiente publicado:
 - `DB_POOL_MAX=2`: limite inicial por instância; ajuste conforme capacidade do banco e tráfego.
 - `GOOGLE_MAPS_KEY` e/ou `MAPBOX_TOKEN`: opcionais para serviços de rotas; nunca publique segredos no frontend.
 
-No projeto dos painéis, configure `API_ORIGIN` com a origem HTTPS do projeto backend, sem `/api/v1`. Esse valor alimenta a configuração da Vercel, e não o bundle React. Ausência ou endereço inválido interrompe a configuração para evitar publicar painéis com um proxy inválido. A configuração usa `vercel.ts` com exportação padrão, executada pelo compilador da Vercel para resolver `API_ORIGIN`. Não renomeie esse arquivo para `.mjs`: a leitura estática usada no deploy Git pode omitir destinos calculados e causar o erro `rewrites[0] missing required property destination`.
+O destino do backend é uma URL HTTPS literal na primeira regra `rewrites` de `apps/web/vercel.json`, seguida de `/api/:path*`. Ao mudar o domínio do backend, atualize essa regra no repositório. `API_ORIGIN` não é usada para resolver esse destino: o JSON contém o destino completo, sem depender de expressões JavaScript ou substituição de variáveis de ambiente. Mantenha apenas `vercel.json` como configuração dos painéis; isso evita depender da compilação de `vercel.ts` ou `vercel.mjs` para preencher o campo obrigatório `destination`.
+
+O build valida o proxy antes de compilar o painel. Se o destino coincidir com `VERCEL_PROJECT_PRODUCTION_URL` ou `VERCEL_URL`, ele falha com uma mensagem para configurar o domínio do backend (`apps/api`), evitando encaminhar a API para o próprio painel.
 
 Nenhuma variável `VITE_*` precisa conter chaves ou credenciais. `.env`, dados locais, credenciais de contas, dependências e bundles não entram no repositório. PostgreSQL e Redis do Docker local não são alcançáveis pelas Functions da Vercel.
 
 ## Ordem de publicação
 
 1. Crie/importe os dois projetos do repositório e configure seus Root Directories. Obtenha os domínios estáveis de produção.
-2. Configure as variáveis dos dois projetos. `APP_ORIGIN` aponta para os painéis; `API_ORIGIN` aponta para o backend.
+2. Configure as variáveis dos dois projetos. `APP_ORIGIN` aponta para os painéis; o destino literal em `apps/web/vercel.json` aponta para o backend.
 3. Aplique as migrações no PostgreSQL do ambiente de destino com `corepack pnpm --filter @solution/api db:migrate`. Execute em uma sessão com as credenciais desse ambiente configuradas. O build não modifica o schema automaticamente.
 4. Publique o backend e confirme `/api/v1/health/ready`, que verifica PostgreSQL e Redis. Falhas de autenticação/serviços não devem ser confundidas com deploy saudável apenas porque `/health/live` respondeu.
 5. Publique os painéis e confirme `/api/v1/health/ready` pelo domínio dos painéis, via proxy.

@@ -1,46 +1,54 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
-const module = new URL('../vercel.ts', import.meta.url).href;
-let attempt = 0;
-async function load(origin) {
-  const previous = process.env.API_ORIGIN;
-  process.env.API_ORIGIN = origin;
-  try {
-    return (await import(`${module}?test=${attempt++}`)).default;
-  } finally {
-    if (previous === undefined) delete process.env.API_ORIGIN;
-    else process.env.API_ORIGIN = previous;
+import { existsSync, readFileSync } from 'node:fs';
+import { validateDeployment } from '../scripts/validate-vercel.mjs';
+
+const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
+
+test('Vercel receives static JSON with all required rewrite destinations', () => {
+  for (const name of ['vercel.ts', 'vercel.mjs'])
+    assert.equal(existsSync(new URL('../' + name, import.meta.url)), false);
+  for (const rule of config.rewrites) {
+    assert.equal(typeof rule.source, 'string');
+    assert.equal(typeof rule.destination, 'string');
+    assert.ok(rule.destination.length > 0);
+    assert.ok(!rule.destination.includes('${'));
   }
-}
-test('API requests retain the backend prefix and SPA fallback never catches API/assets', async () => {
-  const config = await load('https://backend.example.test');
-  assert.equal(config.rewrites[0].destination, 'https://backend.example.test/api/:path*');
+  assert.ok(validateDeployment(config, {}).startsWith('https://'));
+});
+
+test('API proxy preserves its path prefix and SPA fallback excludes API and assets', () => {
+  assert.ok(config.rewrites[0].destination.endsWith('/api/:path*'));
   const pattern = new RegExp(`^${config.rewrites[1].source}$`);
   for (const path of ['/api/v1/me', '/api/v1/auth/login', '/assets/index.js'])
     assert.equal(pattern.test(path), false);
-  assert.equal(pattern.test('/crm/estabelecimentos'), true);
+  assert.equal(pattern.test('/admin/estabelecimentos'), true);
+  assert.equal(config.rewrites[1].destination, '/index.html');
   assert.equal(config.headers[0].headers[0].value, 'no-store');
 });
-test('deployment uses the executable TypeScript entrypoint with a JSON-serializable destination', async () => {
-  assert.equal(existsSync(new URL('../vercel.mjs', import.meta.url)), false);
-  assert.equal(existsSync(new URL('../vercel.json', import.meta.url)), false);
-  const config = JSON.parse(JSON.stringify(await load('https://backend.example.test/')));
-  for (const rewrite of config.rewrites) {
-    assert.equal(typeof rewrite.source, 'string');
-    assert.equal(typeof rewrite.destination, 'string');
-    assert.ok(rewrite.destination.length > 0);
-  }
-  assert.equal(config.rewrites[0].destination, 'https://backend.example.test/api/:path*');
+
+test('deployment refuses an API proxy pointing back to the frontend itself', () => {
+  const hostname = new URL(validateDeployment(config, {})).host;
+  for (const name of ['VERCEL_PROJECT_PRODUCTION_URL', 'VERCEL_URL'])
+    assert.throws(() => validateDeployment(config, { [name]: hostname }), /próprio painel/);
+  assert.doesNotThrow(() =>
+    validateDeployment(config, {
+      VERCEL_PROJECT_PRODUCTION_URL: 'different-frontend.example.test',
+      VERCEL_URL: 'preview-frontend.example.test',
+    }),
+  );
 });
-test('deployment fails without an HTTPS backend origin instead of publishing a broken proxy', async () => {
-  for (const origin of [
+
+test('missing or malformed API destinations fail before deployment', () => {
+  for (const destination of [
+    undefined,
     '',
-    'http://backend.example.test',
-    'https://user:password@backend.example.test',
-    'https://backend.example.test/api/v1',
-    'https://backend.example.test?token=placeholder',
-  ]) {
-    await assert.rejects(load(origin));
-  }
+    'http://backend.example.test/api/:path*',
+    'https://user:password@backend.example.test/api/:path*',
+    'https://backend.example.test/extra/api/:path*',
+    'https://backend.example.test?key=placeholder/api/:path*',
+  ])
+    assert.throws(() =>
+      validateDeployment({ rewrites: [{ source: '/api/:path*', destination }] }, {}),
+    );
 });
