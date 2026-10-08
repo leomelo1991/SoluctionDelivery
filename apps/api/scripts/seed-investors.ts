@@ -7,7 +7,7 @@ const db = new Database();
 try {
   console.log(
     (await seedInvestors(db, password))
-      ? 'Base fictícia criada. Empresa: investidores. Contas: admin@example.test, loja@example.test, entregador@example.test.'
+      ? 'Base fictícia de Franca–SP criada ou atualizada. Empresa: investidores. Contas: admin@example.test, loja@example.test, entregador@example.test.'
       : 'Base de apresentação já criada. Dados e senhas preservados.',
   );
 } finally {

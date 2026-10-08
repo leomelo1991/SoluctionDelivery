@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Database } from '../src/database.js';
 import { seedDemo } from './demo-seed.js';
+import { localizeInvestors } from './investor-franca.js';
 
 const batch = 'investor-presentation-v1';
 const phases = ['waiting', 'assigned', 'accepted', 'arrived', 'collected', 'delivered'] as const;
@@ -21,7 +22,7 @@ export async function seedInvestors(
       const tenant = await tx.tenant.findUniqueOrThrow({ where: { slug } });
       const tenantId = tenant.id;
       const prior = await tx.auditEvent.findFirst({ where: { tenantId, action: batch } });
-      if (prior) return false;
+      if (prior) return localizeInvestors(tx, tenantId);
       const seeded = await tx.auditEvent.findFirst({ where: { tenantId, action: 'demo_seed' } });
       if (!seeded || (await tx.delivery.count({ where: { tenantId } })))
         throw new Error('A empresa já contém dados não pertencentes a esta apresentação.');
@@ -225,6 +226,7 @@ export async function seedInvestors(
           },
         },
       });
+      await localizeInvestors(tx, tenantId);
       return true;
     },
     { timeout: 120000, maxWait: 15000 },

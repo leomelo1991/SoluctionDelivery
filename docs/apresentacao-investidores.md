@@ -1,16 +1,16 @@
-# Base para apresentação a investidores
+# Base de Franca–SP para apresentação a investidores
 
 Todos os dados são fictícios. Os volumes, valores de frete e evolução temporal ilustram funcionalidades; não representam clientes, receita, tração ou resultados reais. O nome da empresa exibido no painel identifica a demonstração.
 
 ## Conteúdo
 
-Empresa isolada `investidores`, com 10 estabelecimentos (7 ativos e 3 leads), 14 entregadores (aprovados e pendentes), 5 regiões tarifadas e 10 notas de CRM. **540 entregas: 528 concluídas e 12 ativas.** Histórico dos últimos 60 dias com crescimento simulado de 5 a 13 entregas concluídas por dia e 12 pedidos ativos em todas as etapas operacionais. Cada entrega tem valores de frete/repasse, eventos cronológicos e oferta quando atribuída. Oito entregadores têm um pedido ativo cada.
+Empresa isolada `investidores`, ambientada em **Franca–SP**, com 10 estabelecimentos (7 ativos e 3 leads), 14 entregadores (aprovados e pendentes), 5 regiões tarifadas (Centro, Estação, Cidade Nova, Vila Aparecida e Jardim Consolação) e 10 notas de CRM. Estabelecimentos, endereços de coleta e destinos estão em Franca; telefones fictícios usam DDD 16. **540 entregas: 528 concluídas e 12 ativas.** Histórico dos últimos 60 dias com crescimento simulado de 5 a 13 entregas concluídas por dia e 12 pedidos ativos em todas as etapas operacionais. Cada entrega tem valores de frete/repasse, eventos cronológicos e oferta quando atribuída. Oito entregadores têm um pedido ativo cada.
 
 ## Ativação na Vercel
 
 No projeto da API, para **Production**, mantenha `ALLOW_DEMO_SEED=true`, `ALLOW_PRODUCTION_DEMO_SEED=true` e `DEMO_PASSWORD` (segredo de 12 a 128 caracteres). Acrescente `SEED_INVESTORS=true` e faça Redeploy usando o Build Command do repositório. As migrations precedem os seeds. Preview não modifica o banco.
 
-O seed cria dados somente na empresa `investidores`; não adiciona entregas à empresa `demo`. Execuções seguintes preservam os registros e não atualizam suas datas ou senhas. Após criar a base, remova `SEED_INVESTORS` e as variáveis do seed se não forem mais necessárias. Uma empresa existente com entregas ou sem a identificação do seed é recusada.
+O seed cria dados somente na empresa `investidores`; não adiciona entregas à empresa `demo`. Bases da versão anterior recebem uma atualização única da localização para Franca, mantendo quantidades, status, valores, datas e senhas. Execuções seguintes preservam os registros e não atualizam suas datas ou senhas. Após criar a base, remova `SEED_INVESTORS` e as variáveis do seed se não forem mais necessárias. Uma empresa existente com entregas ou sem a identificação do seed é recusada.
 
 Localmente: `ALLOW_DEMO_SEED=true corepack pnpm seed:investors`, com `DEMO_PASSWORD` configurada no ambiente.
 
