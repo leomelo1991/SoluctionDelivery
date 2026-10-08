@@ -19,3 +19,21 @@ test('Prisma prefers direct database aliases without changing the application UR
   assert.equal(migrationDatabaseUrl({ DATABASE_URL: env.DATABASE_URL }), env.DATABASE_URL);
   assert.match(migrationDatabaseUrl({}), /localhost:5432/);
 });
+
+import { migrationTarget } from '../../scripts/migration-diagnostics.js';
+
+test('deployment diagnoses the effective direct host and rejects Neon pooling for migrations', () => {
+  assert.throws(
+    () =>
+      migrationTarget({
+        DATABASE_URL_UNPOOLED: 'postgresql://user:secret@ep-demo-pooler.us-east-1.aws.neon.tech/db',
+      }),
+    /pooler/,
+  );
+  const target = migrationTarget({
+    DATABASE_URL_UNPOOLED:
+      'postgresql://user:secret@ep-demo.us-east-1.aws.neon.tech/db?sslmode=require',
+  });
+  assert.equal(target.hostname, 'ep-demo.us-east-1.aws.neon.tech');
+  assert.equal(target.database, 'db');
+});
