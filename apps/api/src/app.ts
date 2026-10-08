@@ -1,3 +1,4 @@
+import { OperationsMapController } from './modules/operations-map.js';
 import { ContractsController } from './modules/finance/contracts.controller.js';
 import 'reflect-metadata';
 import {
@@ -83,7 +84,7 @@ class DashboardModule {}
     AuthModule,
     DashboardModule,
   ],
-  controllers: [HealthController, ContractsController],
+  controllers: [HealthController, ContractsController, OperationsMapController],
   providers: [
     { provide: APP_GUARD, useClass: SecurityGuard },
     { provide: APP_FILTER, useClass: Errors },

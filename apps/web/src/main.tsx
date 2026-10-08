@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import {
+  MapPin,
   LayoutDashboard,
   Bike,
   Building2,
@@ -21,6 +22,9 @@ import { api, ApiError, setSession } from './lib/api';
 import { NoticeContext, ActorContext, actorScope } from './lib/query';
 import { Form } from './components/Form';
 import { clearDrafts } from './lib/drafts';
+const OperationsMap = lazy(() =>
+  import('./pages/OperationsMap').then((m) => ({ default: m.OperationsMap })),
+);
 const Operations = lazy(() =>
   import('./pages/Operations').then((m) => ({ default: m.Operations })),
 );
@@ -212,7 +216,11 @@ function Legal({ privacy = false }: { privacy?: boolean }) {
             responsável.
           </p>
           <p>
-            Quando habilitados, Mapbox ou Google Maps recebem endereços para calcular o percurso.
+            Quando habilitados, Mapbox ou Google Maps recebem endereços para calcular o percurso. O
+            mapa da operação usa Google Maps. Ao ficar disponível e permitir o GPS, o entregador
+            compartilha sua última posição enquanto o aplicativo está aberto. O gestor da empresa e
+            o estabelecimento da entrega em andamento podem acompanhar essa posição. Não armazenamos
+            histórico de trajetos; posições sem atualização por 30 segundos deixam de ser exibidas.
             Credenciais dos serviços ficam no servidor. Preferências de tema são armazenadas no
             navegador; a sessão utiliza cookie necessário à autenticação.
           </p>
@@ -342,6 +350,7 @@ function Application() {
       ? ([
           ['/admin', 'Visão geral', LayoutDashboard],
           ['/admin/entregas', 'Entregas', ListChecks],
+          ['/admin/mapa', 'Mapa da operação', MapPin],
           ['/admin/estabelecimentos', 'Estabelecimentos', Building2],
           ['/admin/entregadores', 'Entregadores', Bike],
           ['/admin/usuarios', 'Usuários', UsersIcon],
@@ -351,6 +360,7 @@ function Application() {
         ] as const)
       : ([
           ['/estabelecimento/entregas', 'Entregas', ListChecks],
+          ['/estabelecimento/mapa', 'Mapa da operação', MapPin],
           ['/estabelecimento/contratos', 'Contrato e escala', Building2],
         ] as const);
   const logout = async () => {
@@ -458,6 +468,7 @@ function Application() {
                     <>
                       <Route path="/admin" element={<Operations user={u} overview />} />
                       <Route path="/admin/entregas" element={<Operations user={u} />} />
+                      <Route path="/admin/mapa" element={<OperationsMap user={u} />} />
                       <Route
                         path="/admin/estabelecimentos"
                         element={<Directory key="establishments" kind="establishments" />}
@@ -476,6 +487,7 @@ function Application() {
                     <>
                       {' '}
                       <Route path="/estabelecimento/entregas" element={<Operations user={u} />} />
+                      <Route path="/estabelecimento/mapa" element={<OperationsMap user={u} />} />
                       <Route
                         path="/estabelecimento/contratos"
                         element={<ContractsPage user={u} />}

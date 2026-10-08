@@ -241,3 +241,6 @@ export type {
   CommercialAllocation,
   CommercialShift,
 } from './commercial';
+
+export type { MapPoint, OperationsMapPin, OperationsMapSnapshot } from './operations-map';
+export * from './position-publisher';

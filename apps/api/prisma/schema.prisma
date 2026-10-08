@@ -88,6 +88,7 @@ model Courier {
  createdAt DateTime @default(now())
  users User[]
  deliveries Delivery[]
+ position CourierPosition?
  allocations CourierAllocation[]
  offers DeliveryOffer[]
  @@unique([tenantId, id])
@@ -312,4 +313,28 @@ model AttendanceEvent {
  createdAt DateTime @default(now())
  allocation CourierAllocation @relation(fields: [tenantId, allocationId], references: [tenantId, id])
  @@index([tenantId, allocationId, createdAt])
+}
+
+// Somente a última amostra; não armazena histórico de deslocamentos.
+model CourierPosition {
+ tenantId String @db.Uuid
+ courierId String @db.Uuid
+ latitude Float
+ longitude Float
+ accuracy Float
+ observedAt DateTime
+ receivedAt DateTime @default(now())
+ courier Courier @relation(fields: [tenantId, courierId], references: [tenantId, id], onDelete: Cascade)
+ @@id([tenantId, courierId])
+ @@index([tenantId, observedAt])
+}
+model MapGeocode {
+ tenantId String @db.Uuid
+ addressHash String
+ latitude Float?
+ longitude Float?
+ status String
+ expiresAt DateTime
+ @@id([tenantId, addressHash])
+ @@index([tenantId, expiresAt])
 }

@@ -120,6 +120,8 @@ export async function cleanup(db: Database, tenantId: string) {
   if (!tenant?.slug.startsWith('test-') && !tenant?.slug.startsWith('e2e-'))
     throw new Error('Refusing to clean non-test data');
   await db.$transaction(async (tx) => {
+    await tx.mapGeocode.deleteMany({ where: { tenantId } });
+    await tx.courierPosition.deleteMany({ where: { tenantId } });
     await tx.attendanceEvent.deleteMany({ where: { tenantId } });
     await tx.courierAllocation.deleteMany({ where: { tenantId } });
     await tx.scheduledShift.deleteMany({ where: { tenantId } });

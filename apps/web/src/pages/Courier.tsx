@@ -1,3 +1,4 @@
+import { useCourierLocation } from '../lib/useCourierLocation';
 import { useState } from 'react';
 import { useDraftState } from '../lib/drafts';
 import { ArrowUpRight, MapPin } from 'lucide-react';
@@ -44,6 +45,9 @@ export function CourierApp({ user }: { user: User }) {
   const dashboard = useData<Dashboard>('/dashboard' + params(period), view === 'history');
   const action = useAction();
   const c = courier.data;
+  const gpsStatus = useCourierLocation(
+    c?.approvalStatus === 'approved' && ['available', 'busy'].includes(c.availabilityStatus),
+  );
   const execute = async (offer: Offer, name: string) => {
     await action.mutateAsync({
       path: `/deliveries/${offer.id}/${name}`,
@@ -57,6 +61,7 @@ export function CourierApp({ user }: { user: User }) {
   const delivery = active.data?.items.find((d) => d.status !== 'assigned');
   return (
     <div className="courier-content stack">
+      <p className="muted">{gpsStatus}</p>
       <div className="row">
         <div>
           <p className="eyebrow">SUA JORNADA</p>

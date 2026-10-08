@@ -277,6 +277,10 @@ export class DirectoryController {
         where: { tenantId_id: { tenantId: r.actor.tenantId, id: c.id } },
         data: { availabilityStatus: b.status },
       });
+      if (b.status === 'offline')
+        await tx.courierPosition.deleteMany({
+          where: { tenantId: r.actor.tenantId, courierId: c.id },
+        });
       await audit(tx, r.actor, 'courier', c.id, 'availability_changed', { status: b.status });
       return updated;
     });

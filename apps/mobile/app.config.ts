@@ -15,7 +15,7 @@ const config: ExpoConfig = {
       'expo-location',
       {
         locationWhenInUsePermission:
-          'Permita usar sua localização para mostrar sua moto no mapa enquanto o app estiver aberto.',
+          'Permita usar sua localização para mostrar sua moto no mapa e compartilhar sua posição com a operação e o estabelecimento da entrega enquanto você estiver disponível e o app aberto.',
         isIosBackgroundLocationEnabled: false,
         isAndroidBackgroundLocationEnabled: false,
         isAndroidForegroundServiceEnabled: false,

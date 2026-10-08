@@ -674,6 +674,58 @@
         ]
       }
     },
+    "/api/v1/operations-map/location": {
+      "post": {
+        "operationId": "OperationsMapController_locate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourierPositionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Mapa da operação"
+        ]
+      }
+    },
+    "/api/v1/operations-map": {
+      "get": {
+        "operationId": "OperationsMapController_snapshot",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Mapa da operação"
+        ]
+      }
+    },
+    "/api/v1/operations-map/resolve": {
+      "post": {
+        "operationId": "OperationsMapController_resolve",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Mapa da operação"
+        ]
+      }
+    },
     "/api/v1/deliveries/{id}/navigation": {
       "post": {
         "operationId": "NavigationController_route",
@@ -2359,6 +2411,30 @@
         "required": [
           "reason",
           "attendedMinutes"
+        ]
+      },
+      "CourierPositionDto": {
+        "type": "object",
+        "properties": {
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "accuracy": {
+            "type": "number"
+          },
+          "observedAt": {
+            "type": "number",
+            "description": "Timestamp original do GPS, em milissegundos Unix."
+          }
+        },
+        "required": [
+          "latitude",
+          "longitude",
+          "accuracy",
+          "observedAt"
         ]
       },
       "NavigationDto": {

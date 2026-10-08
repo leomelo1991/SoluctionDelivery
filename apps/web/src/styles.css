@@ -793,3 +793,33 @@ tbody tr:hover {
 .contract-policy {
   white-space: pre-wrap;
 }
+
+.operation-map {
+  width: 100%;
+  height: min(65vh, 640px);
+  min-height: 340px;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-block: 16px;
+}
+.operation-map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 0.85rem;
+  margin-top: 12px;
+}
+.operation-map-info {
+  color: #17231c;
+  max-width: 260px;
+}
+.operation-map-list {
+  padding-left: 20px;
+}
+.operation-map-list li {
+  margin-block: 12px;
+  overflow-wrap: anywhere;
+}
+.operation-map-list p {
+  margin: 4px 0;
+}

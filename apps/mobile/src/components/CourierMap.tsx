@@ -1,19 +1,10 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  Linking,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-  useColorScheme,
-} from 'react-native';
+import { ActivityIndicator, Platform, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE, type LatLng } from 'react-native-maps';
-import * as Location from 'expo-location';
 import type { Delivery } from '@solution/contracts';
 import { navigationTarget } from '../core/navigation';
 import { useNavigation } from '../core/useNavigation';
-import { observeLocation, type TrackingState } from '../core/location';
+import { type TrackingState } from '../core/location';
 import { Button, Copy, useTheme } from './ui';
 const initialRegion = {
   latitude: -23.55052,
@@ -25,16 +16,18 @@ export const CourierMap = memo(function CourierMap({
   active,
   delivery,
   bottomInset = 0,
+  tracking,
+  onRetry,
 }: {
   active: boolean;
   delivery?: Delivery;
   bottomInset?: number;
+  tracking: TrackingState;
+  onRetry: () => void;
 }) {
   const theme = useTheme();
   const scheme = useColorScheme();
   const map = useRef<MapView>(null);
-  const [tracking, setTracking] = useState<TrackingState>({ status: 'loading' });
-  const [attempt, setAttempt] = useState(0);
   const [ready, setReady] = useState(false);
   const [follow, setFollow] = useState(true);
   const [loaded, setLoaded] = useState(false);
@@ -45,25 +38,6 @@ export const CourierMap = memo(function CourierMap({
     const timer = setTimeout(() => setMapTimeout(true), 20000);
     return () => clearTimeout(timer);
   }, [active, loaded, mapAttempt]);
-  useEffect(() => {
-    if (!active) return;
-    return observeLocation(
-      {
-        permission: Location.getForegroundPermissionsAsync,
-        requestPermission: Location.requestForegroundPermissionsAsync,
-        enabled: Location.hasServicesEnabledAsync,
-        lastKnown: () =>
-          Location.getLastKnownPositionAsync({ maxAge: 30000, requiredAccuracy: 100 }),
-        watch: (callback, onError) =>
-          Location.watchPositionAsync(
-            { accuracy: Location.Accuracy.Balanced, timeInterval: 5000, distanceInterval: 10 },
-            callback,
-            onError,
-          ),
-      },
-      setTracking,
-    );
-  }, [active, attempt]);
   const target = navigationTarget(delivery);
   const route = useNavigation(delivery, tracking, active && Platform.OS === 'android');
   const coordinates = route.data?.coordinates;
@@ -187,24 +161,10 @@ export const CourierMap = memo(function CourierMap({
           </>
         )}
         {tracking.status === 'denied' ? (
-          <Button
-            title="Permitir localização"
-            secondary
-            onPress={() => {
-              if (tracking.canAskAgain) {
-                void Location.requestForegroundPermissionsAsync()
-                  .then(() => setAttempt((a) => a + 1))
-                  .catch(() => setTracking({ status: 'error' }));
-              } else void Linking.openSettings().catch(() => setTracking({ status: 'error' }));
-            }}
-          />
+          <Button title="Permitir localização" secondary onPress={onRetry} />
         ) : (
           (tracking.status === 'error' || tracking.status === 'disabled') && (
-            <Button
-              title="Tentar localização novamente"
-              secondary
-              onPress={() => setAttempt((a) => a + 1)}
-            />
+            <Button title="Tentar localização novamente" secondary onPress={onRetry} />
           )
         )}
       </View>

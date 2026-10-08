@@ -1,3 +1,4 @@
+import { useCourierTracking } from '../core/useCourierTracking';
 import { useEffect, useRef, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, View } from 'react-native';
 import type { Courier, Dashboard, Delivery, Offer, Page } from '@solution/contracts';
@@ -73,6 +74,11 @@ export function CourierHome() {
     observed && (observed.status !== 'delivered' || !completionDismissed) ? observed : undefined;
   const action = useAction<Delivery>();
   const profile = courier.data;
+  const sharing =
+    profile?.approvalStatus === 'approved' &&
+    ['available', 'busy'].includes(profile.availabilityStatus);
+  const gps = useCourierTracking(foreground && (tab === 'home' || sharing), foreground && sharing);
+
   const select = (next: Tab) => {
     setTab(next);
     setPage(1);
@@ -214,6 +220,19 @@ export function CourierHome() {
   );
   return (
     <View style={{ flex: 1, backgroundColor: t.background }}>
+      {sharing && (
+        <View style={{ padding: 8 }}>
+          <Copy muted>
+            {gps.tracking.status !== 'ready'
+              ? 'Localização indisponível. Permita o GPS na tela Início para aparecer na operação.'
+              : gps.upload === 'error'
+                ? 'Falha ao compartilhar o GPS. Tentando novamente…'
+                : gps.upload === 'sent'
+                  ? 'GPS compartilhado com a operação enquanto o app está aberto.'
+                  : 'Preparando compartilhamento do GPS…'}
+          </Copy>
+        </View>
+      )}
       <View style={{ flex: 1, display: tab === 'home' ? 'flex' : 'none' }}>
         {!delivery && (
           <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
@@ -222,6 +241,8 @@ export function CourierHome() {
         )}
         <CourierMap
           active={foreground && tab === 'home'}
+          tracking={gps.tracking}
+          onRetry={() => void gps.retry()}
           delivery={delivery}
           bottomInset={delivery ? panelHeight : 0}
         />

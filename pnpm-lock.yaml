@@ -351,6 +351,9 @@ importers:
       '@tanstack/react-query':
         specifier: 5.104.1
         version: 5.104.1(react@19.3.0)
+      '@vis.gl/react-google-maps':
+        specifier: 1.7.1
+        version: 1.7.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       lucide-react:
         specifier: 0.562.0
         version: 0.562.0(react@19.3.0)
@@ -370,6 +373,9 @@ importers:
         specifier: 4.6.5
         version: 4.6.5
     devDependencies:
+      '@types/google.maps':
+        specifier: 3.66.5
+        version: 3.66.5
       '@types/react':
         specifier: 19.3.0
         version: 19.3.0
@@ -2013,6 +2019,9 @@ packages:
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
+  '@types/google.maps@3.66.5':
+    resolution: {integrity: sha512-z7wMLjozUDNC6SYoxvnsh4RvbFQoiqgjHmfcOWKCjKiLklAKV32jvywuBvJRfpThJZn4TonyoeJc/3t9RlVnWQ==}
+
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
 
@@ -2139,6 +2148,12 @@ packages:
 
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
+
+  '@vis.gl/react-google-maps@1.7.1':
+    resolution: {integrity: sha512-F/GJzJyri7Jqf+bkLNxoi2RcH2hCIo1I3//PyiILqQzdzglMoqZVO1DLXlHPifNdebk1/zib6dMJA3i73nwmuQ==}
+    peerDependencies:
+      react: '>=16.8.0 || ^19.0 || ^19.0.0-rc'
+      react-dom: '>=16.8.0 || ^19.0 || ^19.0.0-rc'
 
   '@visx/curve@4.0.1-alpha.0':
     resolution: {integrity: sha512-jRu61Uz274pV1zyioXmboyrLutYbnKsgjj4njSGCnhdXj5GkZvZbg+ThDb6oOzoAnJOBRLz4rzPlWvNJOzuVMg==}
@@ -6502,6 +6517,8 @@ snapshots:
 
   '@types/geojson@7946.0.16': {}
 
+  '@types/google.maps@3.66.5': {}
+
   '@types/http-errors@2.0.5': {}
 
   '@types/istanbul-lib-coverage@2.0.6': {}
@@ -6667,6 +6684,13 @@ snapshots:
       eslint-visitor-keys: 5.0.1
 
   '@ungap/structured-clone@1.4.0': {}
+
+  '@vis.gl/react-google-maps@1.7.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+    dependencies:
+      '@types/google.maps': 3.66.5
+      fast-deep-equal: 3.1.3
+      react: 19.3.0
+      react-dom: 19.3.0(react@19.3.0)
 
   '@visx/curve@4.0.1-alpha.0':
     dependencies:
