@@ -72,6 +72,7 @@ model Establishment {
  createdAt DateTime @default(now())
  users User[]
  deliveries Delivery[]
+ contracts MerchantContract[]
  notes CRMNote[]
  @@unique([tenantId, id])
  @@index([tenantId, lifecycleStatus])
@@ -87,6 +88,7 @@ model Courier {
  createdAt DateTime @default(now())
  users User[]
  deliveries Delivery[]
+ allocations CourierAllocation[]
  offers DeliveryOffer[]
  @@unique([tenantId, id])
  @@index([tenantId, approvalStatus, availabilityStatus])
@@ -234,4 +236,80 @@ model Idempotency {
  response Json
  createdAt DateTime @default(now())
  @@unique([tenantId, userId, key])
+}
+
+model MerchantContract {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ establishmentId String @db.Uuid
+ title String
+ createdAt DateTime @default(now())
+ establishment Establishment @relation(fields: [tenantId, establishmentId], references: [tenantId, id])
+ versions ContractVersion[]
+ @@unique([tenantId, id])
+ @@index([tenantId, establishmentId])
+}
+model ContractVersion {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ contractId String @db.Uuid
+ number Int
+ revision Int @default(1)
+ status String @default("draft")
+ effectiveFrom DateTime
+ effectiveTo DateTime
+ terms Json
+ createdAt DateTime @default(now())
+ proposedAt DateTime?
+ acceptedAt DateTime?
+ acceptedBy String? @db.Uuid
+ acceptanceEvidence String?
+ contract MerchantContract @relation(fields: [tenantId, contractId], references: [tenantId, id])
+ shifts ScheduledShift[]
+ @@unique([tenantId, id])
+ @@unique([tenantId, contractId, number])
+}
+model ScheduledShift {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ versionId String @db.Uuid
+ templateIndex Int
+ startsAt DateTime
+ endsAt DateTime
+ capacity Int
+ status String @default("scheduled")
+ createdAt DateTime @default(now())
+ version ContractVersion @relation(fields: [tenantId, versionId], references: [tenantId, id])
+ allocations CourierAllocation[]
+ @@unique([tenantId, id])
+ @@unique([tenantId, versionId, templateIndex, startsAt])
+ @@index([tenantId, startsAt])
+}
+model CourierAllocation {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ shiftId String @db.Uuid
+ courierId String @db.Uuid
+ position Int
+ startsAt DateTime
+ endsAt DateTime
+ cancelledAt DateTime?
+ cancellationReason String?
+ createdAt DateTime @default(now())
+ shift ScheduledShift @relation(fields: [tenantId, shiftId], references: [tenantId, id])
+ courier Courier @relation(fields: [tenantId, courierId], references: [tenantId, id])
+ attendance AttendanceEvent[]
+ @@unique([tenantId, id])
+ @@index([tenantId, courierId, startsAt])
+}
+model AttendanceEvent {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ allocationId String @db.Uuid
+ actorUserId String @db.Uuid
+ attendedMinutes Int
+ reason String
+ createdAt DateTime @default(now())
+ allocation CourierAllocation @relation(fields: [tenantId, allocationId], references: [tenantId, id])
+ @@index([tenantId, allocationId, createdAt])
 }

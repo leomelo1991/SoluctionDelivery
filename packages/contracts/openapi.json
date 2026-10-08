@@ -29,6 +29,651 @@
         ]
       }
     },
+    "/api/v1/contracts": {
+      "get": {
+        "operationId": "ContractsController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lifecycleStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "approvalStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operationOpen",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "availabilityStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      },
+      "post": {
+        "operationId": "ContractsController_create",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contracts/simulate": {
+      "post": {
+        "operationId": "ContractsController_simulate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractTermsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contracts/{id}/versions": {
+      "post": {
+        "operationId": "ContractsController_newVersion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VersionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-versions/{id}": {
+      "patch": {
+        "operationId": "ContractsController_revise",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviseContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-versions/{id}/propose": {
+      "post": {
+        "operationId": "ContractsController_propose",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-versions/{id}/accept": {
+      "post": {
+        "operationId": "ContractsController_accept",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptContractDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-shifts": {
+      "get": {
+        "operationId": "ContractsController_shifts",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lifecycleStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "approvalStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operationOpen",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "availabilityStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      },
+      "post": {
+        "operationId": "ContractsController_schedule",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleShiftDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-shifts/{id}/allocate": {
+      "post": {
+        "operationId": "ContractsController_allocate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AllocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-allocations/{id}/replace": {
+      "post": {
+        "operationId": "ContractsController_replace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplacementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-allocations/{id}/cancel": {
+      "post": {
+        "operationId": "ContractsController_cancelAllocation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-shifts/{id}/cancel": {
+      "post": {
+        "operationId": "ContractsController_cancelShift",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
+    "/api/v1/contract-allocations/{id}/attendance": {
+      "post": {
+        "operationId": "ContractsController_attendance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotency-key",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttendanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Contratos e escalas"
+        ]
+      }
+    },
     "/api/v1/deliveries/{id}/navigation": {
       "post": {
         "operationId": "NavigationController_route",
@@ -1446,7 +2091,7 @@
   },
   "info": {
     "title": "Solution Delivery",
-    "description": "API multiempresa. Mutações exigem Origin e X-CSRF-Token; comandos de entrega exigem Idempotency-Key.",
+    "description": "API multiempresa. Mutações exigem Origin e X-CSRF-Token; comandos de entrega, contrato e escala exigem Idempotency-Key.",
     "version": "1.0.0",
     "contact": {}
   },
@@ -1461,6 +2106,261 @@
       }
     },
     "schemas": {
+      "ShiftTemplateDto": {
+        "type": "object",
+        "properties": {
+          "weekday": {
+            "type": "number"
+          },
+          "startMinute": {
+            "type": "number"
+          },
+          "endMinute": {
+            "type": "number"
+          },
+          "courierCount": {
+            "type": "number"
+          },
+          "expectedDeliveries": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "weekday",
+          "startMinute",
+          "endMinute",
+          "courierCount",
+          "expectedDeliveries"
+        ]
+      },
+      "ContractTermsDto": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string"
+          },
+          "coverage": {
+            "type": "string"
+          },
+          "servicePolicy": {
+            "type": "string"
+          },
+          "weeklyAvailabilityCents": {
+            "type": "number"
+          },
+          "platformFeeCents": {
+            "type": "number"
+          },
+          "deliveryFeeCents": {
+            "type": "number"
+          },
+          "payModel": {
+            "type": "string"
+          },
+          "courierFixedCents": {
+            "type": "number"
+          },
+          "courierDeliveryCents": {
+            "type": "number"
+          },
+          "templates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShiftTemplateDto"
+            }
+          }
+        },
+        "required": [
+          "timezone",
+          "coverage",
+          "servicePolicy",
+          "weeklyAvailabilityCents",
+          "platformFeeCents",
+          "deliveryFeeCents",
+          "payModel",
+          "courierFixedCents",
+          "courierDeliveryCents",
+          "templates"
+        ]
+      },
+      "CreateContractDto": {
+        "type": "object",
+        "properties": {
+          "effectiveFrom": {
+            "type": "string"
+          },
+          "effectiveTo": {
+            "type": "string"
+          },
+          "terms": {
+            "$ref": "#/components/schemas/ContractTermsDto"
+          },
+          "establishmentId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "effectiveFrom",
+          "effectiveTo",
+          "terms",
+          "establishmentId",
+          "title"
+        ]
+      },
+      "VersionDto": {
+        "type": "object",
+        "properties": {
+          "effectiveFrom": {
+            "type": "string"
+          },
+          "effectiveTo": {
+            "type": "string"
+          },
+          "terms": {
+            "$ref": "#/components/schemas/ContractTermsDto"
+          }
+        },
+        "required": [
+          "effectiveFrom",
+          "effectiveTo",
+          "terms"
+        ]
+      },
+      "ReviseContractDto": {
+        "type": "object",
+        "properties": {
+          "effectiveFrom": {
+            "type": "string"
+          },
+          "effectiveTo": {
+            "type": "string"
+          },
+          "terms": {
+            "$ref": "#/components/schemas/ContractTermsDto"
+          },
+          "revision": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "effectiveFrom",
+          "effectiveTo",
+          "terms",
+          "revision"
+        ]
+      },
+      "RevisionDto": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "revision"
+        ]
+      },
+      "AcceptContractDto": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "number"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "revision",
+          "evidence"
+        ]
+      },
+      "ScheduleShiftDto": {
+        "type": "object",
+        "properties": {
+          "versionId": {
+            "type": "string"
+          },
+          "templateIndex": {
+            "type": "number"
+          },
+          "startsAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "versionId",
+          "templateIndex",
+          "startsAt"
+        ]
+      },
+      "AllocationDto": {
+        "type": "object",
+        "properties": {
+          "courierId": {
+            "type": "string"
+          },
+          "position": {
+            "type": "number"
+          },
+          "startsAt": {
+            "type": "string"
+          },
+          "endsAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "courierId",
+          "position",
+          "startsAt",
+          "endsAt"
+        ]
+      },
+      "ReplacementDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "courierId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "courierId"
+        ]
+      },
+      "ReasonDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ]
+      },
+      "AttendanceDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string"
+          },
+          "attendedMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "reason",
+          "attendedMinutes"
+        ]
+      },
       "NavigationDto": {
         "type": "object",
         "properties": {

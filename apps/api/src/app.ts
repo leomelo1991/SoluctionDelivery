@@ -1,3 +1,4 @@
+import { ContractsController } from './modules/finance/contracts.controller.js';
 import 'reflect-metadata';
 import {
   Controller,
@@ -82,7 +83,7 @@ class DashboardModule {}
     AuthModule,
     DashboardModule,
   ],
-  controllers: [HealthController],
+  controllers: [HealthController, ContractsController],
   providers: [
     { provide: APP_GUARD, useClass: SecurityGuard },
     { provide: APP_FILTER, useClass: Errors },
@@ -125,7 +126,7 @@ export async function createApplication() {
     new DocumentBuilder()
       .setTitle('Solution Delivery')
       .setDescription(
-        'API multiempresa. Mutações exigem Origin e X-CSRF-Token; comandos de entrega exigem Idempotency-Key.',
+        'API multiempresa. Mutações exigem Origin e X-CSRF-Token; comandos de entrega, contrato e escala exigem Idempotency-Key.',
       )
       .setVersion('1.0.0')
       .addCookieAuth('sd_session')

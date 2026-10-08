@@ -28,6 +28,9 @@ const Directory = lazy(() => import('./pages/Directory').then((m) => ({ default:
 const Users = lazy(() => import('./pages/Directory').then((m) => ({ default: m.Users })));
 const Audit = lazy(() => import('./pages/Directory').then((m) => ({ default: m.Audit })));
 const PricingPage = lazy(() => import('./pages/Pricing').then((m) => ({ default: m.PricingPage })));
+const ContractsPage = lazy(() =>
+  import('./pages/Contracts').then((m) => ({ default: m.ContractsPage })),
+);
 const CourierApp = lazy(() => import('./pages/Courier').then((m) => ({ default: m.CourierApp })));
 import '@fontsource/manrope/latin-400.css';
 import '@fontsource/manrope/latin-500.css';
@@ -343,9 +346,13 @@ function Application() {
           ['/admin/entregadores', 'Entregadores', Bike],
           ['/admin/usuarios', 'Usuários', UsersIcon],
           ['/admin/precos', 'Fretes e condições', Settings2],
+          ['/admin/contratos', 'Contratos e escala', ListChecks],
           ['/admin/auditoria', 'Auditoria', ShieldCheck],
         ] as const)
-      : ([['/estabelecimento/entregas', 'Entregas', ListChecks]] as const);
+      : ([
+          ['/estabelecimento/entregas', 'Entregas', ListChecks],
+          ['/estabelecimento/contratos', 'Contrato e escala', Building2],
+        ] as const);
   const logout = async () => {
     try {
       await signOut();
@@ -461,11 +468,19 @@ function Application() {
                       />
                       <Route path="/admin/usuarios" element={<Users user={u} />} />
                       <Route path="/admin/precos" element={<PricingPage />} />
+                      <Route path="/admin/contratos" element={<ContractsPage user={u} />} />
                       <Route path="/admin/auditoria" element={<Audit />} />
                     </>
                   )}
                   {u.role === 'establishment' && (
-                    <Route path="/estabelecimento/entregas" element={<Operations user={u} />} />
+                    <>
+                      {' '}
+                      <Route path="/estabelecimento/entregas" element={<Operations user={u} />} />
+                      <Route
+                        path="/estabelecimento/contratos"
+                        element={<ContractsPage user={u} />}
+                      />
+                    </>
                   )}{' '}
                   {courier && <Route path="/entregador/*" element={<CourierApp user={u} />} />}
                   <Route path="*" element={<Navigate to={home} replace />} />

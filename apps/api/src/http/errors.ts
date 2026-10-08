@@ -20,7 +20,7 @@ export class Errors implements ExceptionFilter {
         code = String(obj.code ?? `HTTP_${status}`);
       }
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
-      if (['P2002', 'P2034'].includes(exception.code)) {
+      if (['P2002', 'P2004', 'P2034'].includes(exception.code)) {
         status = 409;
         code = 'CONFLICT';
         message = 'Conflito de dados. Atualize e tente novamente.';

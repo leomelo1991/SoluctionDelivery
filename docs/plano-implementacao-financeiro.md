@@ -1,6 +1,6 @@
 # Plano de implementação — contratos, cobrança e repasses
 
-Status: planejamento, sem implementação do módulo e sem movimentação financeira.
+Status: primeira entrega implementada — contratos, orçamento, aceite, escalas, substituição e presença. Núcleo financeiro, cobranças e repasses permanecem planejados. Veja [uso e limites da etapa](contratos-escalas.md).
 
 Base: `main` em `3f4d2288edd469c505894f02d6663137883854af`. Branch: `feat/financeiro-contratos-repasses`. Análise em 08/10/2026 do [documento fornecido, versão 1.3](referencias/plano-financeiro-entregas-v1.3.md). O anexo é a referência funcional; este plano adapta suas 18 seções ao código existente. As referências comerciais e externas do anexo não foram verificadas nesta análise. O rascunho anterior `financeiro-repasses.md` permanece preservado, mas não define o escopo desta implementação.
 
