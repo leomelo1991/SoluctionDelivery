@@ -1,3 +1,4 @@
+import { OpenRouteServiceProvider } from '../../src/modules/openrouteservice.js';
 import { before, beforeEach, after, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -323,6 +324,8 @@ test('routing providers fall back on technical errors and reject ambiguous addre
   const google = app.get(GoogleProvider);
   const routing = app.get(RoutingService);
   const oldFetch = globalThis.fetch;
+  const originalRouting = config.ROUTING_PROVIDER;
+  config.ROUTING_PROVIDER = 'legacy';
   const originalMap = mapbox.enabled;
   const originalGoogle = google.enabled;
   mapbox.enabled = true;
@@ -358,6 +361,7 @@ test('routing providers fall back on technical errors and reject ambiguous addre
     await assert.rejects(routing.route(f.tenant.id, address, address), /Não foi possível calcular/);
   } finally {
     globalThis.fetch = oldFetch;
+    config.ROUTING_PROVIDER = originalRouting;
     mapbox.enabled = originalMap;
     google.enabled = originalGoogle;
   }
@@ -544,16 +548,16 @@ test('native first password gate and native login rate limit are enforced', asyn
 test('native navigation selects the current leg, enforces courier scope and validates GPS', async () => {
   const own = await fixture(db);
   const other = await fixture(db);
-  const provider = app.get(GoogleProvider);
-  const originalEnabled = provider.enabled;
+  const provider = app.get(OpenRouteServiceProvider);
+  const originalKey = config.OPENROUTESERVICE_API_KEY;
   const originalNavigate = provider.navigate;
   let targetStreet = '';
   try {
-    provider.enabled = true;
+    config.OPENROUTESERVICE_API_KEY = 'test-key';
     provider.navigate = async (_origin, target) => {
       targetStreet = target.street;
       return {
-        provider: 'google',
+        provider: 'openrouteservice',
         distanceM: 1000,
         durationSeconds: 120,
         coordinates: [
@@ -615,7 +619,7 @@ test('native navigation selects the current leg, enforces courier scope and vali
     assert.equal(dropoff.body.leg, 'dropoff');
     assert.equal(targetStreet, 'Rua do destino');
     await route(delivery.id, input).expect(409);
-    provider.enabled = false;
+    config.OPENROUTESERVICE_API_KEY = '';
     const unavailable = await route(delivery.id, { ...input, version: collected.version }).expect(
       503,
     );
@@ -623,7 +627,7 @@ test('native navigation selects the current leg, enforces courier scope and vali
     await db.delivery.update({ where: { id: delivery.id }, data: { status: 'delivered' } });
     await route(delivery.id, { ...input, version: collected.version }).expect(409);
   } finally {
-    provider.enabled = originalEnabled;
+    config.OPENROUTESERVICE_API_KEY = originalKey;
     provider.navigate = originalNavigate;
     await cleanup(db, own.tenant.id);
     await cleanup(db, other.tenant.id);

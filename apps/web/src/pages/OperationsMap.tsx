@@ -1,21 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import {
-  APIProvider,
-  Map as GoogleMap,
-  Marker,
-  InfoWindow,
-  useMap,
-  useApiLoadingStatus,
-  APILoadingStatus,
-} from '@vis.gl/react-google-maps';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { divIcon, latLngBounds } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import type { MapPoint, OperationsMapSnapshot, User } from '@solution/contracts';
 import { Button, Card, ErrorState, Loading } from '@solution/ui';
 import { api, ApiError } from '../lib/api';
 import { actorScope } from '../lib/query';
-const key = (import.meta as ImportMeta & { env: Record<string, string | undefined> }).env
-  .VITE_GOOGLE_MAPS_KEY;
-const latLng = (p: MapPoint) => ({ lat: p.latitude, lng: p.longitude });
+const latLng = (p: MapPoint): [number, number] => [p.latitude, p.longitude];
 type Pin = {
   id: string;
   title: string;
@@ -27,21 +19,21 @@ type Pin = {
 function MapContents({ pins, fit }: { pins: Pin[]; fit: number }) {
   const map = useMap();
   const fitted = useRef(-1);
-  const [selectedId, setSelectedId] = useState<string>();
-  const selected = pins.find((p) => p.id === selectedId);
   useEffect(() => {
-    if (!map || !pins.length || fitted.current === fit) return;
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
+  }, [map]);
+  useEffect(() => {
+    if (!pins.length || fitted.current === fit) return;
     fitted.current = fit;
-    if (pins.length === 1) {
-      map.setCenter(latLng(pins[0].point));
-      map.setZoom(15);
-    } else {
-      const bounds = new google.maps.LatLngBounds();
-      pins.forEach((p) => bounds.extend(latLng(p.point)));
-      map.fitBounds(bounds, 60);
-    }
+    if (pins.length === 1) map.setView(latLng(pins[0].point), 15);
+    else
+      map.fitBounds(latLngBounds(pins.map((p) => latLng(p.point))), {
+        padding: [40, 40],
+        maxZoom: 16,
+      });
   }, [map, pins, fit]);
-  if (!map) return null;
   return (
     <>
       {pins.map((p) => (
@@ -49,46 +41,28 @@ function MapContents({ pins, fit }: { pins: Pin[]; fit: number }) {
           key={p.id}
           position={latLng(p.point)}
           title={p.title}
-          onClick={() => setSelectedId(p.id)}
-          zIndex={p.label === 'M' ? 30 : p.label === 'E' ? 20 : 10}
-          label={{ text: p.label, color: '#fff', fontWeight: '700' }}
-          icon={{
-            path: 'M 0,-22 C -13,-22 -18,-12 -18,-4 C -18,8 0,24 0,24 C 0,24 18,8 18,-4 C 18,-12 13,-22 0,-22 Z',
-            fillColor: p.color,
-            fillOpacity: 1,
-            strokeColor: '#fff',
-            strokeWeight: 2,
-            scale: 1,
-            labelOrigin: new google.maps.Point(0, -4),
-          }}
-        />
+          icon={divIcon({
+            className: 'operation-map-pin',
+            html: `<span style="background:${p.color}">${p.label}</span>`,
+            iconSize: [32, 40],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -36],
+          })}
+        >
+          <Popup>
+            <strong>{p.title}</strong>
+            <p>{p.detail}</p>
+          </Popup>
+        </Marker>
       ))}
-      {selected && (
-        <InfoWindow position={latLng(selected.point)} onCloseClick={() => setSelectedId(undefined)}>
-          <div className="operation-map-info">
-            <strong>{selected.title}</strong>
-            <p>{selected.detail}</p>
-          </div>
-        </InfoWindow>
-      )}
     </>
   );
-}
-function MapLoading() {
-  const status = useApiLoadingStatus();
-  if (status === APILoadingStatus.FAILED || status === APILoadingStatus.AUTH_FAILURE)
-    return (
-      <p role="alert">
-        Não foi possível carregar o mapa. A lista da operação continua disponível abaixo.
-      </p>
-    );
-  if (status !== APILoadingStatus.LOADED) return <p role="status">Carregando mapa…</p>;
-  return null;
 }
 export function OperationsMap({ user }: { user: User }) {
   const [visible, setVisible] = useState(!document.hidden);
   const [now, setNow] = useState(Date.now());
   const [fit, setFit] = useState(0);
+  const [tileError, setTileError] = useState(false);
   useEffect(() => {
     const change = () => {
       setVisible(!document.hidden);
@@ -205,23 +179,27 @@ export function OperationsMap({ user }: { user: User }) {
           <span>🟤 C · coleta</span>
           <span>🟣 D · entrega</span>
         </div>
-        {key ? (
-          <APIProvider apiKey={key} language="pt-BR" region="BR">
-            <MapLoading />
-            <GoogleMap
-              className="operation-map"
-              defaultCenter={{ lat: -20.5386, lng: -47.4009 }}
-              defaultZoom={13}
-              gestureHandling="cooperative"
-              disableDefaultUI={false}
-            >
-              <MapContents pins={pins} fit={fit} />
-            </GoogleMap>
-          </APIProvider>
-        ) : (
-          <p role="status">
-            O mapa ainda não está habilitado neste painel. Os dados da operação estão disponíveis na
-            lista abaixo.
+        <MapContainer
+          className="operation-map"
+          center={[-20.5386, -47.4009]}
+          zoom={13}
+          scrollWheelZoom={false}
+        >
+          <TileLayer
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
+            eventHandlers={{
+              tileerror: () => setTileError(true),
+              tileload: () => setTileError(false),
+            }}
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          />
+          <MapContents pins={pins} fit={fit} />
+        </MapContainer>
+        {tileError && (
+          <p role="alert">
+            Não foi possível carregar o fundo do mapa. Confira sua conexão. Os dados da operação
+            continuam disponíveis abaixo.
           </p>
         )}
         <p className="muted">

@@ -13,17 +13,29 @@ test('admin and establishment share a scoped map; browser courier sends GPS and 
   page,
   browser,
 }) => {
-  // Valida a inicialização do SDK sem usar credenciais reais nem depender do Google.
-  await page.route('https://maps.googleapis.com/maps/api/js**', (route) => route.abort());
-  await login(page, 'admin@example.test');
-  const sdkRequest = page.waitForRequest((request) =>
-    request.url().startsWith('https://maps.googleapis.com/maps/api/js'),
+  let googleRequests = 0;
+  page.on('request', (request) => {
+    if (/maps\.googleapis|maps\.gstatic/.test(request.url())) googleRequests++;
+  });
+  await page.route('https://tile.openstreetmap.org/**', (route) =>
+    route.fulfill({
+      contentType: 'image/png',
+      body: Buffer.from(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jhXcAAAAASUVORK5CYII=',
+        'base64',
+      ),
+    }),
   );
-
+  await login(page, 'admin@example.test');
+  const tileRequest = page.waitForRequest((request) =>
+    request.url().startsWith('https://tile.openstreetmap.org/'),
+  );
   await page.getByRole('link', { name: 'Mapa da operação' }).click();
-  expect(new URL((await sdkRequest).url()).searchParams.get('key')).toBe('e2e-public-maps-key');
-  await expect(page.locator('.operation-map')).toBeVisible();
-  await expect(page.getByText(/O mapa ainda não está habilitado/)).toHaveCount(0);
+  await tileRequest;
+  await expect(page.locator('.leaflet-container')).toBeVisible();
+  await expect(page.locator('.leaflet-tile-loaded').first()).toBeVisible();
+  await expect(page.getByRole('link', { name: 'OpenStreetMap', exact: true })).toBeVisible();
+  expect(googleRequests).toBe(0);
   await expect(page.getByRole('heading', { name: 'Mapa da operação', exact: true })).toBeVisible();
   await expect(page.getByText('Outra loja', { exact: true })).toBeVisible();
   const context = await browser.newContext({
@@ -36,11 +48,13 @@ test('admin and establishment share a scoped map; browser courier sends GPS and 
     rider.getByText('GPS compartilhado com a operação enquanto esta tela está visível.'),
   ).toBeVisible();
   await expect(page.getByText('1 entregadores com GPS recente', { exact: true })).toBeVisible();
+  await expect(page.locator('.leaflet-marker-icon[title="Entregador um"]')).toBeVisible();
   const shop = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await shop.route('https://maps.googleapis.com/maps/api/js**', (route) => route.abort());
+  await shop.route('https://tile.openstreetmap.org/**', (route) => route.abort());
   await login(shop, 'loja@example.test');
   await shop.goto('/estabelecimento/mapa');
   await expect(shop.getByText('Loja de testes', { exact: true })).toBeVisible();
+  await expect(shop.getByText(/Não foi possível carregar o fundo do mapa/)).toBeVisible();
   await expect(shop.getByText('Outra loja', { exact: true })).toHaveCount(0);
   await expect(shop.getByText('0 entregadores com GPS recente', { exact: true })).toBeVisible();
   await expect(shop.locator('body')).toHaveJSProperty('scrollWidth', 390);

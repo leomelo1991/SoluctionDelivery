@@ -1,3 +1,4 @@
+import { config } from '../config.js';
 import {
   BadRequestException,
   Body,
@@ -215,7 +216,13 @@ export class PricingController {
         where: { tenantId: r.actor.tenantId },
         orderBy: { startsAt: 'desc' },
       }),
-      routing: { primary: tenant.routingPrimary, fallback: tenant.routingFallback },
+      routing: {
+        primary:
+          config.ROUTING_PROVIDER === 'openrouteservice'
+            ? 'openrouteservice'
+            : tenant.routingPrimary,
+        fallback: config.ROUTING_PROVIDER === 'openrouteservice' ? false : tenant.routingFallback,
+      },
     };
   }
   @Post('quotes') @Roles('admin', 'establishment') quote(

@@ -179,15 +179,19 @@ test('geocoding uses scoped addresses, a shared cache/lease and invalidates chan
   const controller = app.get(OperationsMapController);
   const req = { actor: f.operator } as unknown as AuthRequest;
   const originalFetch = globalThis.fetch,
-    originalKey = config.GOOGLE_MAPS_KEY;
-  config.GOOGLE_MAPS_KEY = 'test-key';
+    originalKey = config.OPENROUTESERVICE_API_KEY;
+  config.OPENROUTESERVICE_API_KEY = 'test-key';
   let calls = 0;
   globalThis.fetch = async () => {
     calls++;
     return new Response(
       JSON.stringify({
-        status: 'OK',
-        results: [{ geometry: { location: { lat: -20.5386, lng: -47.4009 } } }],
+        features: [
+          {
+            properties: { layer: 'address', confidence: 1 },
+            geometry: { type: 'Point', coordinates: [-47.4009, -20.5386] },
+          },
+        ],
       }),
       { status: 200 },
     );
@@ -207,7 +211,7 @@ test('geocoding uses scoped addresses, a shared cache/lease and invalidates chan
     assert.equal(s.pins[0].point, null);
     globalThis.fetch = async () => {
       calls++;
-      return new Response(JSON.stringify({ status: 'ZERO_RESULTS', results: [] }), { status: 200 });
+      return new Response(JSON.stringify({ features: [] }), { status: 200 });
     };
     await controller.resolve(req);
     assert.equal((await controller.snapshot(req)).pins[0].locationStatus, 'unavailable');
@@ -220,6 +224,6 @@ test('geocoding uses scoped addresses, a shared cache/lease and invalidates chan
     assert.equal((await controller.snapshot(req)).pins[0].locationStatus, 'pending');
   } finally {
     globalThis.fetch = originalFetch;
-    config.GOOGLE_MAPS_KEY = originalKey;
+    config.OPENROUTESERVICE_API_KEY = originalKey;
   }
 });

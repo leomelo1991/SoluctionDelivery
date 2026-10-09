@@ -24,6 +24,8 @@ const schema = z
       z.string().min(1).optional(),
     ),
     APP_ORIGIN: z.string().url().default('http://localhost:5173'),
+    OPENROUTESERVICE_API_KEY: z.string().optional(),
+    ROUTING_PROVIDER: z.enum(['openrouteservice', 'legacy']).default('openrouteservice'),
     MAPBOX_TOKEN: z.string().optional(),
     GOOGLE_MAPS_KEY: z.string().optional(),
   })

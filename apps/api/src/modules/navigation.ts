@@ -19,8 +19,8 @@ import { Database } from '../database.js';
 import { NavigationDto, type AddressDto } from '../http/dto.js';
 import { Roles, type Actor, type AuthRequest } from '../http/security.js';
 import { deliveryScope } from './deliveries.js';
-import { GoogleProvider } from './routing.js';
-export type NavigationRoute = Awaited<ReturnType<GoogleProvider['navigate']>> & {
+import { OpenRouteServiceProvider } from './openrouteservice.js';
+export type NavigationRoute = Awaited<ReturnType<OpenRouteServiceProvider['navigate']>> & {
   deliveryId: string;
   version: number;
   leg: 'pickup' | 'dropoff';
@@ -29,7 +29,7 @@ export type NavigationRoute = Awaited<ReturnType<GoogleProvider['navigate']>> & 
 export class NavigationService {
   constructor(
     @Inject(Database) private db: Database,
-    @Inject(GoogleProvider) private google: GoogleProvider,
+    @Inject(OpenRouteServiceProvider) private ors: OpenRouteServiceProvider,
   ) {}
   async route(actor: Actor, id: string, input: NavigationDto): Promise<NavigationRoute> {
     if (actor.role !== 'courier' || !actor.courierId) throw new ForbiddenException();
@@ -53,7 +53,7 @@ export class NavigationService {
         code: 'LOCATION_STALE',
         message: 'Aguarde uma localização atual do aparelho.',
       });
-    if (!this.google.enabled)
+    if (!this.ors.enabled)
       throw new ServiceUnavailableException({
         code: 'NAVIGATION_NOT_CONFIGURED',
         message:
@@ -61,7 +61,7 @@ export class NavigationService {
       });
     let result;
     try {
-      result = await this.google.navigate(
+      result = await this.ors.navigate(
         { latitude: input.latitude, longitude: input.longitude },
         (leg === 'pickup'
           ? delivery.pickupAddress

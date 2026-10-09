@@ -222,7 +222,7 @@ export interface NavigationRoute {
   deliveryId: string;
   version: number;
   leg: 'pickup' | 'dropoff';
-  provider: 'google';
+  provider: 'google' | 'openrouteservice';
   coordinates: Coordinate[];
   distanceM: number;
   durationSeconds: number;

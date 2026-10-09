@@ -355,41 +355,50 @@ export function PricingPage() {
       </Card>
       <Card>
         <h2>Fonte das distâncias</h2>
-        <p className="muted">
-          Mapbox e Google Maps são usados para cotar o percurso, sem rastreamento do entregador.
-        </p>
-        <Form
-          draftKey="pricing:routing"
-          key={JSON.stringify(p.routing)}
-          fields={[
-            {
-              name: 'primary',
-              label: 'Provedor principal',
-              kind: 'select',
-              options: [
-                { value: 'mapbox', label: 'Mapbox' },
-                { value: 'google', label: 'Google Maps' },
-              ],
-            },
-            {
-              name: 'fallback',
-              label: 'Usar o outro em falhas técnicas?',
-              kind: 'select',
-              options: [
-                { value: 'true', label: 'Sim' },
-                { value: 'false', label: 'Não' },
-              ],
-            },
-          ]}
-          initial={{ primary: p.routing.primary, fallback: String(p.routing.fallback) }}
-          onSubmit={(v) =>
-            action.mutateAsync({
-              path: '/pricing/routing',
-              method: 'PATCH',
-              body: { primary: v.primary, fallback: v.fallback === 'true' },
-            })
-          }
-        />
+        {p.routing.primary === 'openrouteservice' ? (
+          <p className="muted">
+            As distâncias e os trajetos usam openrouteservice. Se o serviço estiver indisponível,
+            use tarifa regional ou distância manual.
+          </p>
+        ) : (
+          <>
+            <p className="muted">
+              Mapbox e Google Maps são usados para cotar o percurso, sem rastreamento do entregador.
+            </p>
+            <Form
+              draftKey="pricing:routing"
+              key={JSON.stringify(p.routing)}
+              fields={[
+                {
+                  name: 'primary',
+                  label: 'Provedor principal',
+                  kind: 'select',
+                  options: [
+                    { value: 'mapbox', label: 'Mapbox' },
+                    { value: 'google', label: 'Google Maps' },
+                  ],
+                },
+                {
+                  name: 'fallback',
+                  label: 'Usar o outro em falhas técnicas?',
+                  kind: 'select',
+                  options: [
+                    { value: 'true', label: 'Sim' },
+                    { value: 'false', label: 'Não' },
+                  ],
+                },
+              ]}
+              initial={{ primary: p.routing.primary, fallback: String(p.routing.fallback) }}
+              onSubmit={(v) =>
+                action.mutateAsync({
+                  path: '/pricing/routing',
+                  method: 'PATCH',
+                  body: { primary: v.primary, fallback: v.fallback === 'true' },
+                })
+              }
+            />
+          </>
+        )}
       </Card>
       {modal && (
         <Modal

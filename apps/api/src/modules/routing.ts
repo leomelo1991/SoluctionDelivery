@@ -4,6 +4,7 @@ import {
   Injectable,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { OpenRouteServiceProvider, OpenRouteError } from './openrouteservice.js';
 import { z } from 'zod';
 import { config } from '../config.js';
 import { Database } from '../database.js';
@@ -15,7 +16,7 @@ export interface Coordinate {
 export interface RouteResult {
   distanceM: number;
   durationSeconds: number;
-  provider: 'mapbox' | 'google';
+  provider: 'mapbox' | 'google' | 'openrouteservice';
 }
 export interface RoutingProvider {
   enabled: boolean;
@@ -221,12 +222,18 @@ export class RoutingService {
     @Inject(Database) private db: Database,
     @Inject(MapboxProvider) private mapbox: MapboxProvider,
     @Inject(GoogleProvider) private google: GoogleProvider,
+    @Inject(OpenRouteServiceProvider) private ors: OpenRouteServiceProvider,
   ) {}
   async route(tenantId: string, origin: AddressDto, destination: AddressDto) {
     const tenant = await this.db.tenant.findUniqueOrThrow({ where: { id: tenantId } });
     const first = tenant.routingPrimary === 'mapbox' ? this.mapbox : this.google;
     const second = tenant.routingPrimary === 'mapbox' ? this.google : this.mapbox;
-    const providers = tenant.routingFallback ? [first, second] : [first];
+    const providers =
+      config.ROUTING_PROVIDER === 'openrouteservice'
+        ? [this.ors]
+        : tenant.routingFallback
+          ? [first, second]
+          : [first];
     for (const provider of providers) {
       if (!provider.enabled) continue;
       try {
@@ -235,18 +242,17 @@ export class RoutingService {
           throw new ProviderError(false);
         return route;
       } catch (e) {
-        if (e instanceof ProviderError && !e.technical)
+        if ((e instanceof ProviderError || e instanceof OpenRouteError) && !e.technical)
           throw new BadRequestException({
             code: 'ADDRESS_AMBIGUOUS',
             message:
-              'Endereço não localizado ou ambíguo. Confira número, bairro, cidade e CEP, ou informe distância manual com justificativa.',
+              'Endereço não localizado ou ambíguo. Confira número, bairro, cidade e CEP, ou informe distância manual.',
           });
       }
     }
     throw new ServiceUnavailableException({
       code: 'ROUTING_UNAVAILABLE',
-      message:
-        'Não foi possível calcular a rota. Use tarifa regional ou informe distância manual com justificativa.',
+      message: 'Não foi possível calcular a rota. Use tarifa regional ou informe distância manual.',
     });
   }
 }

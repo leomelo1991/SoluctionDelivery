@@ -63,7 +63,7 @@ Integração e navegador exigem PostgreSQL/Redis acessíveis e migração aplica
 - Mapbox e Google com alternativa em falhas técnicas; distância manual auditada.
 - Temas claro, escuro e sistema; interface responsiva e componentes compartilhados.
 
-Mapas reais dependem de `MAPBOX_TOKEN` e `GOOGLE_MAPS_KEY`. Sem credenciais, tarifa regional e distância manual funcionam. Não há GPS contínuo, pagamentos, assinatura SaaS, cancelamento ou reatribuição de entrega ativa. Docker Compose em um nó não fornece alta disponibilidade.
+Os mapas dos painéis usam Leaflet + OpenStreetMap sem chave pública. Rotas e geocodificação usam `OPENROUTESERVICE_API_KEY` no backend. Sem ela, tarifa regional e distância manual funcionam. Veja [configuração na Vercel](docs/mapas-vercel.md). Não há GPS contínuo, pagamentos, assinatura SaaS, cancelamento ou reatribuição de entrega ativa. Docker Compose em um nó não fornece alta disponibilidade.
 
 ## App nativo do entregador (Expo)
 

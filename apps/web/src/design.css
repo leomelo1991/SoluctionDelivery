@@ -991,3 +991,23 @@ textarea[aria-invalid='true'] {
 .async-select-popup > p {
   padding: 8px;
 }
+
+.operation-map.leaflet-container {
+  z-index: 0;
+  isolation: isolate;
+  font-family: inherit;
+}
+.operation-map-pin span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid white;
+  border-radius: 50% 50% 50% 0;
+  color: white;
+  font-weight: 800;
+  box-shadow: 0 2px 6px #0006;
+}
+.operation-map .leaflet-popup-content {
+  color: #14243b;
+}

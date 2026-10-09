@@ -1,3 +1,4 @@
+import { OpenRouteServiceProvider } from '../../src/modules/openrouteservice.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { NavigationService } from '../../src/modules/navigation.js';
@@ -18,7 +19,7 @@ const input = () => ({ latitude: -23.55, longitude: -46.63, timestamp: Date.now(
 const pickup = { street: 'Loja' };
 const destination = { street: 'Cliente' };
 const route = {
-  provider: 'google' as const,
+  provider: 'openrouteservice' as const,
   distanceM: 1200,
   durationSeconds: 240,
   coordinates: [
@@ -54,7 +55,7 @@ function setup(status = 'accepted', changed = false, enabled = true, missing = f
       requestedDestination = to;
       return route;
     },
-  } as unknown as GoogleProvider;
+  } as unknown as OpenRouteServiceProvider;
   return { service: new NavigationService(db, google), destination: () => requestedDestination };
 }
 test('navigation uses authorized pickup before collection and destination after collection', async () => {

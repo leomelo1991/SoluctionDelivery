@@ -1,13 +1,44 @@
-# Mapas nos painéis
+# Mapas gratuitos nos painéis
 
-A mensagem “O mapa ainda não está habilitado neste painel” indica que o frontend foi compilado sem a chave pública. Não é uma rejeição do Google: nessa situação o navegador nem inicia o Maps JavaScript API.
+Os painéis usam React Leaflet + Leaflet e tiles do OpenStreetMap. O mapa base e os pins
+com coordenadas/GPS não dependem de chave Google. Não há SDK Google no bundle do painel.
+O zoom por rolagem está desabilitado para permitir rolar a página no celular; há botões
+para zoom e enquadramento. O GPS continua sendo atualizado a cada dois segundos enquanto
+a tela estiver visível, com expiração de posições antigas.
 
-No projeto **solution-delivery-painel**, cadastre `VITE_GOOGLE_MAPS_KEY` em Settings → Environment Variables, selecionando Production e os ambientes Preview usados. O valor deve ser somente a chave, sem `VITE_GOOGLE_MAPS_KEY=`. O alias `VITE_GOOGLE_MAPS_API_KEY` também é aceito; a variável principal tem prioridade. Depois faça um novo deployment do frontend: o Vite incorpora a chave durante o build, e alterar a variável não modifica deployments antigos. O build na Vercel agora falha com uma orientação explícita se essa chave estiver ausente.
+## Vercel
 
-Habilite **Maps JavaScript API** no projeto Google Cloud dessa chave pública e restrinja-a aos domínios efetivamente usados pelo painel (por exemplo `https://solution-delivery-painel.vercel.app/*`). Previews com outro domínio também precisam de uma restrição correspondente. Uma chave somente para Routes API não habilita o mapa no navegador. O serviço Google também depende da configuração de faturamento do projeto.
+1. Faça deploy da nova `main` no projeto **solution-delivery-painel**. As variáveis
+   `VITE_GOOGLE_MAPS_KEY` e `VITE_GOOGLE_MAPS_API_KEY` não são mais usadas.
+2. Crie uma conta em https://openrouteservice.org/ e gere uma chave no painel do serviço.
+3. No projeto **solution-delivery-api**, cadastre `OPENROUTESERVICE_API_KEY` como segredo
+   nos ambientes necessários (Production e, se usado, Preview). Nunca use prefixo `VITE_`.
+4. Faça novo deploy da API. `ROUTING_PROVIDER` usa `openrouteservice` por padrão; não é
+   necessário defini-lo. Google e Mapbox não são chamados automaticamente, mesmo que as
+   chaves antigas permaneçam nas variáveis. `legacy` é somente uma opção explícita de
+   compatibilidade para cotação antiga.
 
-No projeto **solution-delivery-api**, `GOOGLE_MAPS_KEY` é uma chave separada de servidor, usada para resolver os endereços pela **Geocoding API** e calcular rotas pela **Routes API**. Ela nunca é usada como fallback da chave pública. Sem geocodificação, o mapa base pode aparecer, mas os locais sem coordenadas continuarão pendentes. Não há coordenadas inventadas para esses endereços.
+Sem chave ORS, o mapa base continua disponível, assim como o GPS dos entregadores.
+Novos endereços ficam pendentes de localização e rotas automáticas ficam indisponíveis.
+Frete regional e distância manual continuam funcionando. Os trajetos de navegação do
+entregador e a cotação por distância usam ORS quando configurado. O perfil driving-car
+fornece trajetos rodoviários, sem trânsito em tempo real nem regras específicas de motos.
+A troca não altera o SDK nativo de renderização dos aplicativos Android/iOS.
 
-O administrador vê a operação do tenant. O lojista recebe da API somente seu estabelecimento, suas entregas em aberto e GPS recente dos entregadores atendendo suas entregas aceitas, em coleta ou em entrega. Entregadores sem atendimento vinculado à loja e dados de outras lojas não são retornados. O escopo vem da sessão autenticada, não de parâmetros enviados pelo navegador.
+## Escopo e uso dos serviços
 
-Verificação local: `node --test --test-isolation=none apps/web/test/*.test.mjs`, build do frontend, teste de integração `operations-map.test` e Playwright `operations-map.spec.ts`/`responsive.spec.ts`. Os testes de isolamento e layout não comprovam autorização/faturamento da conta Google nem as variáveis configuradas na Vercel.
+O administrador vê a operação da plataforma; o lojista recebe somente seu estabelecimento,
+suas entregas e entregadores atendendo essas entregas. O destino da navegação é determinado
+pela API a partir da entrega autorizada, nunca de um endereço arbitrário do cliente.
+Endereços não localizados ou ambíguos não recebem coordenadas inventadas.
+O cache de endereços é separado por provedor: resultados anteriores do Google não são
+reutilizados sobre o mapa OSM. GPS enviado pelo entregador permanece disponível.
+
+A atribuição OpenStreetMap fica visível. Os tiles públicos são adequados para demonstração
+interativa moderada, sem garantia de disponibilidade: não implementar download em massa,
+prefetch ou uso offline. Para maior volume, contratar/hospedar um provedor de tiles e
+substituir a URL/atribuição em `OperationsMap.tsx` conforme o contrato do provedor.
+Leia https://operations.osmfoundation.org/policies/tiles/ .
+O plano gratuito de ORS tem cotas: consulte https://openrouteservice.org/plans/ antes do uso.
+Geocodificação usa cache e lease para evitar repetição; falhas/limites ficam explícitos,
+sem fallback automático para serviços pagos ou servidores demonstrativos de rotas.

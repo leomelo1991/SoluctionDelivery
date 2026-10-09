@@ -33,7 +33,6 @@ export default defineConfig({
     {
       command: `corepack pnpm --filter @solution/web dev --port ${webPort}`,
       url: webOrigin,
-      env: { VITE_GOOGLE_MAPS_KEY: 'e2e-public-maps-key' },
       reuseExistingServer: false,
       timeout: 60000,
     },

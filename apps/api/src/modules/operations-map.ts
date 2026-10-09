@@ -12,9 +12,8 @@ import {
 import { ApiProperty, ApiTags } from '@nestjs/swagger';
 import { IsInt, IsNumber, Max, Min } from 'class-validator';
 import { createHash } from 'node:crypto';
-import { z } from 'zod';
+import { OpenRouteServiceProvider } from './openrouteservice.js';
 import { Database } from '../database.js';
-import { config } from '../config.js';
 import { RateLimiter, Roles, type AuthRequest } from '../http/security.js';
 import type { AddressDto } from '../http/dto.js';
 import { addressText } from './routing.js';
@@ -31,29 +30,16 @@ export class CourierPositionDto {
 }
 export function mapAddressHash(address: AddressDto) {
   return createHash('sha256')
-    .update(addressText(address).normalize('NFC').trim().toLowerCase())
+    .update(('openrouteservice:' + addressText(address)).normalize('NFC').trim().toLowerCase())
     .digest('hex');
 }
-const geoResponse = z.object({
-  status: z.string(),
-  results: z.array(
-    z.object({
-      partial_match: z.boolean().optional(),
-      geometry: z.object({
-        location: z.object({
-          lat: z.number().min(-90).max(90),
-          lng: z.number().min(-180).max(180),
-        }),
-      }),
-    }),
-  ),
-});
 @ApiTags('Mapa da operação')
 @Controller('operations-map')
 export class OperationsMapController {
   constructor(
     @Inject(Database) private db: Database,
     @Inject(RateLimiter) private limiter: RateLimiter,
+    @Inject(OpenRouteServiceProvider) private ors: OpenRouteServiceProvider,
   ) {}
 
   @Post('location')
@@ -186,7 +172,7 @@ export class OperationsMapController {
     const cache = new Map(locations.map((l) => [l.addressHash, l]));
     return {
       generatedAt: now.toISOString(),
-      geocodingEnabled: !!config.GOOGLE_MAPS_KEY,
+      geocodingEnabled: this.ors.enabled,
       truncated: entities.truncated || positions.length > 1000,
       pins: pins.map((p) => {
         const location = cache.get(mapAddressHash(p.address));
@@ -228,7 +214,7 @@ export class OperationsMapController {
   @Roles('admin', 'establishment')
   @Header('Cache-Control', 'no-store')
   async resolve(@Req() r: AuthRequest) {
-    if (!config.GOOGLE_MAPS_KEY) return { enabled: false, resolved: 0 };
+    if (!this.ors.enabled) return { enabled: false, resolved: 0 };
     await this.limiter.hit(`map-geocode:${r.actor.tenantId}:${r.actor.id}`, 12);
     const pins = this.pins(await this.entities(r));
     const unique = new Map(pins.map((p) => [mapAddressHash(p.address), p.address]));
@@ -257,24 +243,7 @@ export class OperationsMapController {
         if (!claim.count) return false;
         let point: { latitude: number; longitude: number } | null = null;
         try {
-          const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
-          url.search = new URLSearchParams({
-            address: addressText(address),
-            components: 'country:BR',
-            key: config.GOOGLE_MAPS_KEY!,
-          }).toString();
-          const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
-          if (response.ok) {
-            const data = geoResponse.parse(await response.json());
-            if (
-              data.status === 'OK' &&
-              data.results.length === 1 &&
-              !data.results[0].partial_match
-            ) {
-              const location = data.results[0].geometry.location;
-              point = { latitude: location.lat, longitude: location.lng };
-            }
-          }
+          point = await this.ors.geocode(address);
         } catch {
           /* Falhas ficam explícitas no mapa, sem inventar coordenadas. */
         }

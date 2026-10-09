@@ -1,3 +1,4 @@
+import { OpenRouteServiceProvider } from './modules/openrouteservice.js';
 import { SettlementController } from './modules/finance/settlement.controller.js';
 import { FinanceController } from './modules/finance/core.controller.js';
 import { FinanceWorker } from './modules/finance/worker.js';
@@ -54,7 +55,10 @@ class HealthController {
   }
 }
 @Global()
-@Module({ providers: [Database, RateLimiter], exports: [Database, RateLimiter] })
+@Module({
+  providers: [Database, RateLimiter, OpenRouteServiceProvider],
+  exports: [Database, RateLimiter, OpenRouteServiceProvider],
+})
 class CoreModule {}
 @Module({
   controllers: [NavigationController],
