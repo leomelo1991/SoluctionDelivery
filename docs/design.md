@@ -23,3 +23,14 @@ Foco visível, link para pular a navegação, área de toque de pelo menos 44px 
 Executar build do frontend, ESLint e Prettier nos arquivos alterados. A suíte `tests/e2e/responsive.spec.ts` cobre larguras de 320, 390, 768, 1024, 1440 e 1920px; depende de PostgreSQL, Redis e configuração de testes. A verificação visual deve incluir login, visão geral, entregas, financeiro, drawer e diálogo nos temas claro e escuro. Build bem-sucedido não substitui a verificação em navegador.
 
 O Mobbin não forneceu referências nesta revisão porque sua integração exigiu plano pago. O desenho é próprio, baseado na aplicação existente.
+
+### Seleção de registros com pesquisa
+
+`AsyncSelect` apresenta um único campo fechado. Ao abrir, o painel reúne pesquisa,
+resultados, paginação e a ação de limpar a seleção. A busca não ocupa um segundo campo
+permanente no formulário. O padrão é compartilhado por estabelecimentos, entregadores,
+administradores e entregas onde a lista é consultada na API.
+
+Setas percorrem os resultados, Enter seleciona, Escape fecha a lista sem fechar o
+formulário e Tab permite seguir para o próximo controle. Ao escolher, o foco retorna
+ao campo; pesquisar ou mudar de página preserva a seleção até uma nova escolha.

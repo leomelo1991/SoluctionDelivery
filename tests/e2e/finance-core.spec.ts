@@ -19,7 +19,8 @@ test('financial sandbox activates, confirms credits, reserves a week and shows s
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: 'Habilitar simulação', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await page.getByLabel('Estabelecimento', { exact: true }).selectOption(fixture().store.id);
+  await page.getByLabel('Estabelecimento', { exact: true }).click();
+  await page.getByRole('option', { name: fixture().store.name, exact: true }).click();
   await page.getByRole('button', { name: 'Ativar carteira de simulação' }).click();
   await dialog.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(dialog).toHaveCount(0);

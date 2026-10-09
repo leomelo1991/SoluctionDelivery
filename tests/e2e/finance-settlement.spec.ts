@@ -60,7 +60,8 @@ test('admin closes week and pays simulation; establishment and courier see their
     await post('/reservations/week', { versionId: f.version.id, week: '2026-09-07' });
   }, fixture());
   await page.goto('/admin/financeiro');
-  await page.getByLabel('Estabelecimento', { exact: true }).selectOption(fixture().store.id);
+  await page.getByLabel('Estabelecimento', { exact: true }).click();
+  await page.getByRole('option', { name: fixture().store.name, exact: true }).click();
   await page.getByRole('button', { name: 'Fechar semana simulada' }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Versão aceita').selectOption(fixture().version.id);

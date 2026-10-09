@@ -70,7 +70,8 @@ test('admin layout and financial dialogs work from small phones to wide desktops
         }
       }
       if (path.endsWith('financeiro')) {
-        await page.getByLabel('Estabelecimento', { exact: true }).selectOption(f.store.id);
+        await page.getByLabel('Estabelecimento', { exact: true }).click();
+        await page.getByRole('option', { name: f.store.name, exact: true }).click();
         await expect(
           page.getByRole('heading', { name: 'Loja de testes', exact: true }),
         ).toBeVisible();

@@ -76,7 +76,7 @@ test('integrated delivery persists across establishment, courier and CRM session
   await expect(admin.getByRole('heading', { name: 'Visão geral' })).toBeVisible();
   await login(courier, 'entregador@example.test');
   await expect(courier.getByRole('heading', { name: /Olá/ })).toBeVisible();
-  await store.getByRole('button', { name: 'Nova entrega' }).click();
+  await store.getByRole('button', { name: 'Nova entrega', exact: true }).first().click();
   const form = store.getByRole('dialog');
   await form.getByLabel('Nome do destinatário').fill('Cliente da jornada');
   await verifyDraftOnReturn(store, '/api/v1/me', async () => {
@@ -205,7 +205,7 @@ test('pricing forms apply distance formula and cumulative surcharge to the quote
   await expect(extra).toHaveCount(0);
   await expect(admin.getByText('Em vigor', { exact: true })).toBeVisible();
   await login(store, 'loja@example.test');
-  await store.getByRole('button', { name: 'Nova entrega' }).click();
+  await store.getByRole('button', { name: 'Nova entrega', exact: true }).first().click();
   const form = store.getByRole('dialog');
   await form.getByLabel('Nome do destinatário').fill('Cliente do frete');
   await form.getByLabel('Telefone do destinatário').fill('11999990009');
@@ -230,7 +230,7 @@ test('expired session returns to login and clears the previous profile', async (
   await expect(page.getByRole('heading', { name: 'Visão geral' })).toBeVisible();
   await page.context().clearCookies();
   await page.getByRole('link', { name: 'Entregadores', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Entre na sua operação' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible();
   await expect(page).toHaveURL(/\/login$/);
   await login(page, 'loja@example.test');
   await expect(page.getByRole('heading', { name: 'Gestão de entregas' })).toBeVisible();
@@ -250,7 +250,7 @@ test('initial password gate requires change and preserves password whitespace', 
   });
   expect(reset.status()).toBe(201);
   await page.getByRole('button', { name: 'Sair da conta' }).click();
-  await expect(page.getByRole('heading', { name: 'Entre na sua operação' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible();
   await login(page, 'segundo@example.test', temporary);
   await expect(page.getByRole('heading', { name: 'Defina sua senha pessoal' })).toBeVisible();
   const blocked = await page.request.get('/api/v1/couriers/me');

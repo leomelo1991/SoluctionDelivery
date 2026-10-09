@@ -905,3 +905,89 @@ textarea[aria-invalid='true'] {
   width: 100%;
   white-space: nowrap;
 }
+
+.async-select {
+  position: relative;
+  min-width: 0;
+}
+.async-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  font: inherit;
+  cursor: pointer;
+}
+.async-select-trigger span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.async-select-trigger svg,
+.async-select-search svg,
+.async-select-options svg {
+  flex-shrink: 0;
+}
+.async-select-popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  padding: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px #0002;
+  max-height: min(360px, 50dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.async-select-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+}
+.async-select-search input {
+  min-width: 0;
+  width: 100%;
+}
+.async-select-options {
+  list-style: none;
+  margin: 8px 0;
+  padding: 0;
+}
+.async-select-options li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.async-select-options li:hover,
+.async-select-options .is-active,
+.async-select-options [aria-selected='true'] {
+  background: var(--accent-soft);
+  color: var(--on-accent);
+}
+.async-select-footer:empty {
+  display: none;
+}
+.async-select-footer .actions {
+  flex-wrap: wrap;
+}
+.async-select-popup > p {
+  padding: 8px;
+}

@@ -18,7 +18,8 @@ test('CRM proposes a budget; establishment accepts; CRM reserves a courier', asy
   await page.getByRole('button', { name: 'Novo contrato', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await dialog.getByLabel('Nome do contrato').fill('Plano semanal Franca E2E');
-  await dialog.getByLabel('Estabelecimento', { exact: true }).selectOption(fixture().store.id);
+  await dialog.getByLabel('Estabelecimento', { exact: true }).click();
+  await dialog.getByRole('option', { name: fixture().store.name, exact: true }).click();
   await dialog.getByLabel('Vigência: início (São Paulo)').fill('2030-01-01T00:00');
   await dialog.getByLabel('Vigência: fim exclusivo (São Paulo)').fill('2030-02-01T00:00');
   await dialog.getByLabel('Área de atendimento').fill('Franca–SP, Centro e Estação');
@@ -55,9 +56,8 @@ test('CRM proposes a budget; establishment accepts; CRM reserves a courier', asy
   await expect(dialog).toHaveCount(0);
   await page.getByRole('button', { name: 'Escala e presença', exact: true }).click();
   await page.getByRole('button', { name: 'Alocar entregador', exact: true }).click();
-  await dialog
-    .getByLabel('Entregador aprovado', { exact: true })
-    .selectOption(fixture().courier.id);
+  await dialog.getByLabel('Entregador aprovado', { exact: true }).click();
+  await dialog.getByRole('option', { name: 'Entregador um', exact: true }).click();
   await dialog.getByRole('button', { name: 'Salvar', exact: true }).click();
   await expect(page.getByText('Vaga 1 · Entregador um', { exact: true })).toBeVisible();
   await shop.getByRole('button', { name: 'Escala e presença', exact: true }).click();

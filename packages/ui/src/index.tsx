@@ -173,6 +173,15 @@ export function Modal({
         <Dialog.Overlay className="modal-overlay" />
         <Dialog.Content
           className="modal"
+          onEscapeKeyDown={(event) => {
+            // An open nested selector consumes Escape before the dialog does.
+            if (
+              event.target instanceof Element &&
+              event.target.closest('[data-escape-boundary="true"]')
+            ) {
+              event.preventDefault();
+            }
+          }}
           onCloseAutoFocus={(event) => {
             event.preventDefault();
             if (document.querySelector('[role="dialog"]')) return;

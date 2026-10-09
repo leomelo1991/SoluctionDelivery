@@ -154,7 +154,10 @@ export function Form({
                   source={f.source!}
                   draftKey={draftKey ? `${draftKey}:${f.name}:search` : undefined}
                   value={field.value ?? ''}
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    field.onChange(value);
+                    onDirty?.();
+                  }}
                 />
               )}
             />
