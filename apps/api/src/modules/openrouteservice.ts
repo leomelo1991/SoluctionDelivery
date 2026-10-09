@@ -87,6 +87,12 @@ export class OpenRouteServiceProvider {
   }
   async navigate(origin: { latitude: number; longitude: number }, destination: AddressDto) {
     const target = await this.geocode(destination);
+    return this.between(origin, target);
+  }
+  async between(
+    origin: { latitude: number; longitude: number },
+    target: { latitude: number; longitude: number },
+  ) {
     const data = directions.parse(
       await this.request('https://api.openrouteservice.org/v2/directions/driving-car/geojson', {
         method: 'POST',

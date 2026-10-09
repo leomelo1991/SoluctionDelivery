@@ -242,7 +242,12 @@ export type {
   CommercialShift,
 } from './commercial';
 
-export type { MapPoint, OperationsMapPin, OperationsMapSnapshot } from './operations-map';
+export type {
+  MapPoint,
+  OperationsMapPin,
+  OperationsMapSnapshot,
+  OperationsMapRoute,
+} from './operations-map';
 export * from './position-publisher';
 export { financeMoney, payoutLabels } from './finance';
 export type {

@@ -1,5 +1,10 @@
+import { francaCep } from './cep-location.js';
 import {
   BadRequestException,
+  NotFoundException,
+  ConflictException,
+  Param,
+  ParseUUIDPipe,
   Body,
   Controller,
   ForbiddenException,
@@ -82,6 +87,7 @@ export class OperationsMapController {
         select: {
           id: true,
           code: true,
+          version: true,
           status: true,
           courierId: true,
           pickupAddress: true,
@@ -172,18 +178,24 @@ export class OperationsMapController {
     const cache = new Map(locations.map((l) => [l.addressHash, l]));
     return {
       generatedAt: now.toISOString(),
-      geocodingEnabled: this.ors.enabled,
+      geocodingEnabled:
+        this.ors.enabled ||
+        pins.some((p) => p.address.city.toLowerCase() === 'franca' && p.address.state === 'SP'),
       truncated: entities.truncated || positions.length > 1000,
       pins: pins.map((p) => {
         const location = cache.get(mapAddressHash(p.address));
         const point =
-          location?.status === 'ready' && location.latitude !== null && location.longitude !== null
+          location &&
+          ['ready', 'approximate'].includes(location.status) &&
+          location.latitude !== null &&
+          location.longitude !== null
             ? { latitude: location.latitude, longitude: location.longitude }
             : null;
         return {
           ...p,
           address: addressText(p.address),
           point,
+          approximate: location?.status === 'approximate',
           locationStatus: point
             ? 'ready'
             : location?.status === 'unavailable'
@@ -210,11 +222,59 @@ export class OperationsMapController {
     };
   }
 
+  @Post('routes/:id')
+  @Roles('admin', 'establishment')
+  @Header('Cache-Control', 'no-store')
+  async route(@Req() r: AuthRequest, @Param('id', ParseUUIDPipe) id: string) {
+    const entities = await this.entities(r);
+    const delivery = entities.deliveries.find((d) => d.id === id);
+    if (!delivery) throw new NotFoundException();
+    await this.limiter.hit(`map-route:${r.actor.tenantId}:${r.actor.id}`, 12);
+    const snapshot = await this.snapshot(r);
+    const pickup = snapshot.pins.find((p) => p.id === `pickup:${id}`);
+    const dropoff = snapshot.pins.find((p) => p.id === `dropoff:${id}`);
+    const courier = snapshot.couriers.find((c) => c.deliveryId === id);
+    const target = courier && ['accepted', 'arrived'].includes(delivery.status) ? pickup : dropoff;
+    const origin = courier?.point ?? pickup?.point;
+    if (!origin || !target?.point)
+      throw new BadRequestException('A rota aguarda coordenadas válidas dos endereços.');
+    let coordinates = [origin, target.point];
+    let kind: 'road' | 'connection' = 'connection';
+    let distanceM: number | null = null;
+    let notice = 'Ligação aproximada entre os pontos; não representa o trajeto pelas ruas.';
+    if (this.ors.enabled) {
+      try {
+        const route = await this.ors.between(origin, target.point);
+        coordinates = route.coordinates;
+        distanceM = route.distanceM;
+        kind = 'road';
+        notice = 'Trajeto calculado pelo openrouteservice.';
+      } catch {
+        notice = 'Trajeto viário indisponível. Exibindo apenas a ligação entre os pontos.';
+      }
+    }
+    const current = await this.db.delivery.findFirst({
+      where: { ...deliveryScope(r.actor), id },
+      select: { version: true, status: true },
+    });
+    if (!current || current.version !== delivery.version || current.status !== delivery.status)
+      throw new ConflictException('A entrega mudou. Atualize a rota.');
+    return {
+      deliveryId: id,
+      kind,
+      coordinates,
+      distanceM,
+      notice,
+      approximate: !!pickup?.approximate || !!target.approximate,
+      origin: courier ? 'GPS recente do entregador' : 'Local de coleta — percurso previsto',
+      version: delivery.version,
+    };
+  }
+
   @Post('resolve')
   @Roles('admin', 'establishment')
   @Header('Cache-Control', 'no-store')
   async resolve(@Req() r: AuthRequest) {
-    if (!this.ors.enabled) return { enabled: false, resolved: 0 };
     await this.limiter.hit(`map-geocode:${r.actor.tenantId}:${r.actor.id}`, 12);
     const pins = this.pins(await this.entities(r));
     const unique = new Map(pins.map((p) => [mapAddressHash(p.address), p.address]));
@@ -242,17 +302,22 @@ export class OperationsMapController {
         });
         if (!claim.count) return false;
         let point: { latitude: number; longitude: number } | null = null;
+        let approximate = false;
         try {
-          point = await this.ors.geocode(address);
+          if (this.ors.enabled) point = await this.ors.geocode(address);
         } catch {
           /* Falhas ficam explícitas no mapa, sem inventar coordenadas. */
+        }
+        if (!point && address.city.toLowerCase() === 'franca' && address.state === 'SP') {
+          point = (await francaCep(address.postalCode))?.point ?? null;
+          approximate = !!point;
         }
         await this.db.mapGeocode.updateMany({
           where: { ...key, expiresAt: lease },
           data: {
             latitude: point?.latitude ?? null,
             longitude: point?.longitude ?? null,
-            status: point ? 'ready' : 'unavailable',
+            status: point ? (approximate ? 'approximate' : 'ready') : 'unavailable',
             expiresAt: new Date(Date.now() + (point ? 27 * 86400000 : 300000)),
           },
         });

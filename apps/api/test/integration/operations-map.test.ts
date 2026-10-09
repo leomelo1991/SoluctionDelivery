@@ -227,3 +227,54 @@ test('geocoding uses scoped addresses, a shared cache/lease and invalidates chan
     config.OPENROUTESERVICE_API_KEY = originalKey;
   }
 });
+
+test('map routes are scoped and use CEP approximation without inventing street routes or GPS', async () => {
+  const oldKey = config.OPENROUTESERVICE_API_KEY;
+  config.OPENROUTESERVICE_API_KEY = '';
+  const pickup = { ...address, number: '1001' },
+    destination = { ...address, number: '1002' };
+  const delivery = await db.delivery.create({
+    data: {
+      tenantId: f.tenant.id,
+      establishmentId: f.store.id,
+      status: 'collected',
+      courierId: f.courier.id,
+      pickupAddress: pickup,
+      destinationAddress: destination,
+      recipientName: 'Rota de teste',
+      recipientPhone: '11999999999',
+      feeCents: 1000,
+      courierPayoutCents: 800,
+      pricingSnapshot: {},
+    },
+  });
+  try {
+    for (const [i, a] of [pickup, destination].entries())
+      await db.mapGeocode.create({
+        data: {
+          tenantId: f.tenant.id,
+          addressHash: mapAddressHash(a),
+          latitude: -20.54 + i / 100,
+          longitude: -47.4,
+          status: 'approximate',
+          expiresAt: new Date(Date.now() + 60000),
+        },
+      });
+    const result = await post(shop, `/routes/${delivery.id}`, {}).expect(201);
+    assert.equal(result.body.kind, 'connection');
+    assert.equal(result.body.approximate, true);
+    assert.equal(result.body.distanceM, null);
+    assert.equal(result.body.coordinates.length, 2);
+    assert.match(result.body.origin, /percurso previsto/);
+    await post(outsider, `/routes/${delivery.id}`, {}).expect(404);
+    await post(courier, `/routes/${delivery.id}`, {}).expect(403);
+    await db.delivery.update({
+      where: { id: delivery.id },
+      data: { establishmentId: f.otherStore.id },
+    });
+    await post(shop, `/routes/${delivery.id}`, {}).expect(404);
+    await post(admin, `/routes/${delivery.id}`, {}).expect(201);
+  } finally {
+    config.OPENROUTESERVICE_API_KEY = oldKey;
+  }
+});

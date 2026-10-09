@@ -19,7 +19,7 @@ a tela estiver visível, com expiração de posições antigas.
    compatibilidade para cotação antiga.
 
 Sem chave ORS, o mapa base continua disponível, assim como o GPS dos entregadores.
-Novos endereços ficam pendentes de localização e rotas automáticas ficam indisponíveis.
+Endereços sem coordenadas podem usar a aproximação por CEP em Franca, descrita abaixo; rotas automáticas pelas ruas ficam indisponíveis.
 Frete regional e distância manual continuam funcionando. Os trajetos de navegação do
 entregador e a cotação por distância usam ORS quando configurado. O perfil driving-car
 fornece trajetos rodoviários, sem trânsito em tempo real nem regras específicas de motos.
@@ -42,3 +42,31 @@ Leia https://operations.osmfoundation.org/policies/tiles/ .
 O plano gratuito de ORS tem cotas: consulte https://openrouteservice.org/plans/ antes do uso.
 Geocodificação usa cache e lease para evitar repetição; falhas/limites ficam explícitos,
 sem fallback automático para serviços pagos ou servidores demonstrativos de rotas.
+
+## Percursos e CEPs de Franca
+
+O painel permite escolher a entrega em **Entrega no mapa** e atualizar seu trajeto.
+Com ORS configurado, a linha contínua segue a rota calculada pelo serviço. Sem chave
+ou em caso de falha, a linha tracejada representa somente uma ligação entre pontos,
+identificada na tela como aproximação, sem distância viária inventada. A origem é o
+GPS recente do entregador autorizado; sem GPS, usa-se o local de coleta e a tela
+informa que se trata de percurso previsto. A rota nunca fabrica posição do entregador.
+
+Para endereços de Franca/SP, BrasilAPI CEP v2 pode fornecer uma coordenada aproximada
+quando a geocodificação exata não está disponível. CEP sem coordenadas, fora de Franca,
+incompatível com a consulta ou com valores inválidos não gera pin. Essas coordenadas
+não são usadas para recalcular fretes: os valores continuam dependendo da cotação
+normal ou da distância manual.
+
+No deploy da API com `SEED_INVESTORS=true` e as permissões de seed demonstrativo já
+configuradas, `seed-investors` executa uma atualização única da base `investidores`.
+Consulta CEPs candidatos e exige ao menos dois pontos distintos confirmados pela
+BrasilAPI. Atualiza somente lojas demonstrativas identificadas e entregas do lote
+`investor-presentation-v1`; preserva senhas, valores, status e históricos. Registra a
+origem BrasilAPI, os CEPs consultados com sucesso e a aproximação no evento de auditoria
+`investor-cep-map-v1`. Não altera outras empresas.
+
+Se a BrasilAPI não retornar coordenadas válidas suficientes, o deploy informa que o
+mapa demonstrativo está pendente, sem alterar endereços nem gravar o marcador de
+conclusão. Um novo seed/deploy pode tentar novamente. O endpoint público utilizado é
+`https://brasilapi.com.br/api/cep/v2/{cep}`; o ambiente deve permitir esse domínio.

@@ -9,6 +9,7 @@ export interface OperationsMapPin {
   address: string;
   active: boolean;
   point: MapPoint | null;
+  approximate?: boolean;
   locationStatus: 'ready' | 'pending' | 'unavailable';
   deliveryId?: string;
   courierId?: string;
@@ -28,4 +29,15 @@ export interface OperationsMapSnapshot {
     leg: 'pickup' | 'dropoff' | null;
     deliveryId: string | null;
   }>;
+}
+
+export interface OperationsMapRoute {
+  deliveryId: string;
+  kind: 'road' | 'connection';
+  coordinates: MapPoint[];
+  distanceM: number | null;
+  notice: string;
+  approximate: boolean;
+  origin: string;
+  version: number;
 }

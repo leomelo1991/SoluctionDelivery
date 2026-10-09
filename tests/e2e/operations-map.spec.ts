@@ -72,3 +72,81 @@ test('admin and establishment share a scoped map; browser courier sends GPS and 
   await context.close();
   await shop.close();
 });
+
+test('operation map draws a clearly marked connection and a street route for the selected delivery', async ({
+  page,
+}) => {
+  await login(page, 'admin@example.test');
+  await page.route('https://tile.openstreetmap.org/**', (route) => route.abort());
+  const id = '00000000-0000-4000-8000-000000000001';
+  await page.route('**/api/v1/operations-map', (route) =>
+    route.fulfill({
+      json: {
+        generatedAt: new Date().toISOString(),
+        geocodingEnabled: false,
+        truncated: false,
+        couriers: [],
+        pins: [
+          {
+            id: `pickup:${id}`,
+            deliveryId: id,
+            kind: 'pickup',
+            label: 'Coleta #540',
+            address: 'CEP de Franca — demonstração',
+            active: false,
+            approximate: true,
+            locationStatus: 'ready',
+            point: { latitude: -20.54, longitude: -47.4 },
+          },
+          {
+            id: `dropoff:${id}`,
+            deliveryId: id,
+            kind: 'dropoff',
+            label: 'Entrega #540',
+            address: 'CEP de Franca — demonstração',
+            active: true,
+            approximate: true,
+            locationStatus: 'ready',
+            point: { latitude: -20.55, longitude: -47.41 },
+          },
+        ],
+      },
+    }),
+  );
+  let road = false;
+  await page.route(`**/api/v1/operations-map/routes/${id}`, (route) =>
+    route.fulfill({
+      json: {
+        deliveryId: id,
+        version: 1,
+        kind: road ? 'road' : 'connection',
+        coordinates: [
+          { latitude: -20.54, longitude: -47.4 },
+          { latitude: -20.54, longitude: -47.41 },
+          { latitude: -20.55, longitude: -47.41 },
+        ],
+        notice: road
+          ? 'Trajeto calculado pelo openrouteservice.'
+          : 'Ligação aproximada entre os pontos; não representa o trajeto pelas ruas.',
+        approximate: true,
+        origin: 'Local de coleta — percurso previsto',
+        distanceM: road ? 2000 : null,
+      },
+    }),
+  );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/admin/mapa');
+  await expect(page.getByLabel('Entrega no mapa')).toHaveValue(id);
+  await expect(page.locator('.leaflet-overlay-pane path')).toHaveAttribute(
+    'stroke-dasharray',
+    '10 10',
+  );
+  await expect(
+    page.getByText(/Ligação aproximada entre os pontos; não representa/).first(),
+  ).toBeVisible();
+  road = true;
+  await page.getByRole('button', { name: 'Atualizar trajeto' }).click();
+  await expect(page.getByText(/Trajeto calculado pelo openrouteservice/).first()).toBeVisible();
+  await expect(page.locator('.leaflet-overlay-pane path')).not.toHaveAttribute('stroke-dasharray');
+  await expect(page.locator('body')).toHaveJSProperty('scrollWidth', 390);
+});

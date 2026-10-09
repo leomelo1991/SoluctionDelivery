@@ -1,3 +1,4 @@
+import { enrichInvestorMap } from '../../scripts/investor-map.js';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -50,6 +51,43 @@ test('investor dataset has consistent histories, assignments and repeatable fina
     assert.equal(await seedInvestors(db, 'different-password-123', slug), false);
     assert.equal(await db.delivery.count({ where }), deliveries.length);
     assert.deepEqual(await db.delivery.aggregate({ where, _sum: { feeCents: true } }), totals);
+    const originalFetch = globalThis.fetch;
+    try {
+      globalThis.fetch = async () => new Response(JSON.stringify({}));
+      assert.equal(await enrichInvestorMap(db, slug), 0);
+      globalThis.fetch = async (input) => {
+        const cep = String(input).split('/').at(-1)!;
+        return new Response(
+          JSON.stringify({
+            cep,
+            city: 'Franca',
+            state: 'SP',
+            street: 'Logradouro de teste',
+            neighborhood: 'Centro',
+            location: {
+              coordinates: {
+                latitude: String(-20.54 + Number(cep.slice(-3)) / 100000),
+                longitude: '-47.4',
+              },
+            },
+          }),
+        );
+      };
+      assert.equal(await enrichInvestorMap(db, slug), deliveries.length);
+      assert.equal(await enrichInvestorMap(db, slug), 0);
+      assert.deepEqual(await db.delivery.aggregate({ where, _sum: { feeCents: true } }), totals);
+      const enriched = await db.delivery.findFirstOrThrow({ where });
+      assert.notEqual(
+        (enriched.pickupAddress as { postalCode: string }).postalCode,
+        (enriched.destinationAddress as { postalCode: string }).postalCode,
+      );
+      assert.match(
+        (enriched.destinationAddress as { complement: string }).complement,
+        /aproximada por CEP/,
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   } finally {
     const tenant = await db.tenant.findUnique({ where: { slug } });
     if (tenant) await cleanup(db, tenant.id);

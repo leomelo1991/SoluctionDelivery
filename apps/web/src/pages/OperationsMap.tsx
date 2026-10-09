@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import { divIcon, latLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { MapPoint, OperationsMapSnapshot, User } from '@solution/contracts';
+import type {
+  MapPoint,
+  OperationsMapSnapshot,
+  OperationsMapRoute,
+  User,
+} from '@solution/contracts';
 import { Button, Card, ErrorState, Loading } from '@solution/ui';
 import { api, ApiError } from '../lib/api';
 import { actorScope } from '../lib/query';
@@ -16,7 +21,15 @@ type Pin = {
   color: string;
   label: string;
 };
-function MapContents({ pins, fit }: { pins: Pin[]; fit: number }) {
+function MapContents({
+  pins,
+  fit,
+  route,
+}: {
+  pins: Pin[];
+  fit: number;
+  route?: OperationsMapRoute;
+}) {
   const map = useMap();
   const fitted = useRef(-1);
   useEffect(() => {
@@ -34,8 +47,28 @@ function MapContents({ pins, fit }: { pins: Pin[]; fit: number }) {
         maxZoom: 16,
       });
   }, [map, pins, fit]);
+  useEffect(() => {
+    if (route?.coordinates.length)
+      map.fitBounds(latLngBounds(route.coordinates.map(latLng)), {
+        padding: [40, 40],
+        maxZoom: 16,
+      });
+  }, [map, route]);
   return (
     <>
+      {route && (
+        <Polyline
+          positions={route.coordinates.map(latLng)}
+          pathOptions={{
+            color: '#087b69',
+            weight: 5,
+            dashArray: route.kind === 'connection' ? '10 10' : undefined,
+          }}
+        >
+          <Popup>{route.notice}</Popup>
+        </Polyline>
+      )}
+
       {pins.map((p) => (
         <Marker
           key={p.id}
@@ -62,6 +95,7 @@ export function OperationsMap({ user }: { user: User }) {
   const [visible, setVisible] = useState(!document.hidden);
   const [now, setNow] = useState(Date.now());
   const [fit, setFit] = useState(0);
+  const [selectedDelivery, setSelectedDelivery] = useState('');
   const [tileError, setTileError] = useState(false);
   useEffect(() => {
     const change = () => {
@@ -138,6 +172,29 @@ export function OperationsMap({ user }: { user: User }) {
     ],
     [data, couriers],
   );
+  const deliveries = data?.pins.filter((p) => p.kind === 'dropoff') ?? [];
+  const routeId = deliveries.some((p) => p.deliveryId === selectedDelivery)
+    ? selectedDelivery
+    : (deliveries.find((p) => p.active)?.deliveryId ?? deliveries[0]?.deliveryId ?? '');
+  const routeReady =
+    !!routeId && !!data?.pins.filter((p) => p.deliveryId === routeId).every((p) => p.point);
+  const route = useQuery<OperationsMapRoute, ApiError>({
+    queryKey: [
+      actorScope(user),
+      'operations-map-route',
+      routeId,
+      routeReady,
+      data?.pins
+        .filter((p) => p.deliveryId === routeId)
+        .map((p) => p.active)
+        .join(':'),
+    ],
+    queryFn: () => api(`/operations-map/routes/${routeId}`, 'POST'),
+    enabled: visible && routeReady,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+    retry: false,
+  });
   const missing = data?.pins.filter((p) => !p.point) ?? [];
   return (
     <div className="stack">
@@ -179,6 +236,40 @@ export function OperationsMap({ user }: { user: User }) {
           <span>🟤 C · coleta</span>
           <span>🟣 D · entrega</span>
         </div>
+        {!!deliveries.length && (
+          <div className="field">
+            <label htmlFor="map-delivery">Entrega no mapa</label>
+            <select
+              id="map-delivery"
+              value={routeId}
+              onChange={(event) => setSelectedDelivery(event.target.value)}
+            >
+              {deliveries.map((p) => (
+                <option key={p.id} value={p.deliveryId}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+            <Button
+              variant="secondary"
+              disabled={!routeReady || route.isFetching}
+              onClick={() => void route.refetch()}
+            >
+              Atualizar trajeto
+            </Button>
+            {!routeReady && <p>Localizando os pontos da entrega…</p>}
+            {route.isFetching && <p role="status">Calculando trajeto…</p>}
+            {route.error && <p role="alert">{route.error.message}</p>}
+            {route.data && routeReady && (
+              <p role="status">
+                {route.data.notice} {route.data.origin}.
+                {route.data.approximate
+                  ? ' Localização aproximada por CEP; não indica o número do imóvel.'
+                  : ''}
+              </p>
+            )}
+          </div>
+        )}
         <MapContainer
           className="operation-map"
           center={[-20.5386, -47.4009]}
@@ -194,7 +285,11 @@ export function OperationsMap({ user }: { user: User }) {
             }}
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
-          <MapContents pins={pins} fit={fit} />
+          <MapContents
+            pins={pins}
+            fit={fit}
+            route={routeReady && !route.error ? route.data : undefined}
+          />
         </MapContainer>
         {tileError && (
           <p role="alert">
@@ -270,6 +365,7 @@ export function OperationsMap({ user }: { user: User }) {
                   ? ' · Etapa atual'
                   : ''}
               <p className="muted">{p.address}</p>
+              {p.approximate && <small>Localização aproximada por CEP (BrasilAPI).</small>}
               {!p.point && (
                 <small>
                   {p.locationStatus === 'unavailable'
