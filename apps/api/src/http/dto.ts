@@ -181,6 +181,10 @@ export class QuoteDto {
   manualReason?: string;
 }
 export class CreateDeliveryDto extends QuoteDto {
+  @ApiPropertyOptional()
+  @ValidateIf((_o, value) => value !== undefined)
+  @IsUUID()
+  externalOrderId?: string;
   @ApiProperty() @IsUUID() quoteId!: string;
   @ApiProperty() @cleanText() @IsString() @Length(2, 120) recipientName!: string;
   @ApiProperty() @cleanText() @IsString() @Length(8, 25) recipientPhone!: string;

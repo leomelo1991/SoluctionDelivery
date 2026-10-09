@@ -32,6 +32,9 @@ const FinancePageView = lazy(() =>
 const OperationsMap = lazy(() =>
   import('./pages/OperationsMap').then((m) => ({ default: m.OperationsMap })),
 );
+const ExternalOrders = lazy(() =>
+  import('./pages/ExternalOrders').then((m) => ({ default: m.ExternalOrders })),
+);
 const Operations = lazy(() =>
   import('./pages/Operations').then((m) => ({ default: m.Operations })),
 );
@@ -427,6 +430,7 @@ function Application() {
       ? ([
           ['/admin', 'Visão geral', LayoutDashboard, 'Operação'],
           ['/admin/entregas', 'Entregas', ListChecks, 'Operação'],
+          ['/admin/pedidos-externos', 'Pedidos externos', PackageCheck, 'Operação'],
           ['/admin/mapa', 'Mapa da operação', MapPin, 'Operação'],
           ['/admin/estabelecimentos', 'Estabelecimentos', Building2, 'Rede de parceiros'],
           ['/admin/entregadores', 'Entregadores', Bike, 'Rede de parceiros'],
@@ -438,6 +442,7 @@ function Application() {
         ] as const)
       : ([
           ['/estabelecimento/entregas', 'Entregas', ListChecks, 'Operação'],
+          ['/estabelecimento/pedidos-externos', 'Pedidos externos', PackageCheck, 'Operação'],
           ['/estabelecimento/mapa', 'Mapa da operação', MapPin, 'Operação'],
           ['/estabelecimento/contratos', 'Contrato e escala', CalendarDays, 'Gestão'],
           ['/estabelecimento/financeiro', 'Financeiro', Wallet, 'Gestão'],
@@ -573,6 +578,7 @@ function Application() {
                     <>
                       <Route path="/admin" element={<Operations user={u} overview />} />
                       <Route path="/admin/entregas" element={<Operations user={u} />} />
+                      <Route path="/admin/pedidos-externos" element={<ExternalOrders user={u} />} />
                       <Route path="/admin/mapa" element={<OperationsMap user={u} />} />
                       <Route
                         path="/admin/estabelecimentos"
@@ -593,6 +599,10 @@ function Application() {
                     <>
                       {' '}
                       <Route path="/estabelecimento/entregas" element={<Operations user={u} />} />
+                      <Route
+                        path="/estabelecimento/pedidos-externos"
+                        element={<ExternalOrders user={u} />}
+                      />
                       <Route path="/estabelecimento/mapa" element={<OperationsMap user={u} />} />
                       <Route
                         path="/estabelecimento/financeiro"

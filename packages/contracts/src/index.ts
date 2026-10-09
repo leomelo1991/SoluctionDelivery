@@ -31,6 +31,7 @@ export interface DeliveryEvent {
   createdAt: string;
 }
 export interface Delivery {
+  externalOrders?: Array<{ provider: string; externalReference: string; mode: string }>;
   id: string;
   code: number;
   status: Stage;
@@ -261,3 +262,24 @@ export type {
   FinanceEarningView,
   FinanceTreasuryView,
 } from './finance';
+
+export interface ExternalOrder {
+  id: string;
+  establishmentId: string;
+  provider: 'ifood' | '99food' | 'other';
+  externalReference: string;
+  mode: 'demo';
+  recipientName: string;
+  recipientPhone: string;
+  destinationAddress: Address;
+  notes: string;
+  createdAt: string;
+  deliveryId: string | null;
+  establishment: { name: string };
+  delivery: { id: string; code: number; status: Stage } | null;
+}
+export const externalProviderLabels: Record<string, string> = {
+  ifood: 'iFood',
+  '99food': '99Food',
+  other: 'Outro canal',
+};

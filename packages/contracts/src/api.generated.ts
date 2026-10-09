@@ -788,6 +788,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/external-orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ExternalOrdersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/external-orders/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["ExternalOrdersController_simulate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/establishments": {
         parameters: {
             query?: never;
@@ -1254,6 +1286,7 @@ export interface components {
             regionId?: string;
             manualDistanceM?: number;
             manualReason?: string;
+            externalOrderId?: string;
             quoteId: string;
             recipientName: string;
             recipientPhone: string;
@@ -1264,6 +1297,12 @@ export interface components {
             version: number;
             courierId?: string;
             reason?: string;
+        };
+        SimulateOrderDto: {
+            establishmentId: string;
+            /** @enum {string} */
+            provider: "ifood" | "99food" | "other";
+            externalReference: string;
         };
         EstablishmentDto: {
             name: string;
@@ -2523,6 +2562,55 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["DeliveryActionDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ExternalOrdersController_list: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                q?: string;
+                status?: string;
+                lifecycleStatus?: string;
+                approvalStatus?: string;
+                operationOpen?: string;
+                availabilityStatus?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ExternalOrdersController_simulate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulateOrderDto"];
             };
         };
         responses: {

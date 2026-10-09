@@ -131,6 +131,7 @@ export async function cleanup(db: Database, tenantId: string) {
     await tx.session.deleteMany({ where: { tenantId } });
     await tx.deliveryEvent.deleteMany({ where: { tenantId } });
     await tx.deliveryOffer.deleteMany({ where: { tenantId } });
+    await tx.externalOrder.deleteMany({ where: { tenantId } });
     await tx.delivery.deleteMany({ where: { tenantId } });
     await tx.cRMNote.deleteMany({ where: { tenantId } });
     await tx.user.deleteMany({ where: { tenantId } });

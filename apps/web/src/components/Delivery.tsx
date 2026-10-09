@@ -1,3 +1,4 @@
+import { externalProviderLabels } from '@solution/contracts';
 import { ArrowUpRight, MapPin, PackageCheck } from 'lucide-react';
 import type { Delivery, Stage, User } from '@solution/contracts';
 import { dateTime, formatAddress, mapsLink, money, stageLabels } from '@solution/contracts';
@@ -35,6 +36,12 @@ export function DeliveryCard({
         <strong>#{d.code}</strong>
         <DeliveryStatus status={d.status} />
       </div>
+      {d.externalOrders?.map((order) => (
+        <small key={order.externalReference}>
+          {externalProviderLabels[order.provider] ?? order.provider} · {order.externalReference} ·
+          Demonstração
+        </small>
+      ))}
       <h3>{d.recipientName}</h3>
       <p className="muted">{d.establishment.name}</p>
       <div className="address-line">

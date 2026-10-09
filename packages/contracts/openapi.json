@@ -1894,6 +1894,125 @@
         ]
       }
     },
+    "/api/v1/external-orders": {
+      "get": {
+        "operationId": "ExternalOrdersController_list",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lifecycleStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "approvalStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operationOpen",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "availabilityStatus",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pedidos externos — demonstração"
+        ]
+      }
+    },
+    "/api/v1/external-orders/simulate": {
+      "post": {
+        "operationId": "ExternalOrdersController_simulate",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Pedidos externos — demonstração"
+        ]
+      }
+    },
     "/api/v1/establishments": {
       "get": {
         "operationId": "DirectoryController_establishments",
@@ -3439,6 +3558,9 @@
           "manualReason": {
             "type": "string"
           },
+          "externalOrderId": {
+            "type": "string"
+          },
           "quoteId": {
             "type": "string"
           },
@@ -3479,6 +3601,30 @@
         },
         "required": [
           "version"
+        ]
+      },
+      "SimulateOrderDto": {
+        "type": "object",
+        "properties": {
+          "establishmentId": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "ifood",
+              "99food",
+              "other"
+            ]
+          },
+          "externalReference": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "establishmentId",
+          "provider",
+          "externalReference"
         ]
       },
       "EstablishmentDto": {

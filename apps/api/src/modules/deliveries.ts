@@ -68,6 +68,14 @@ export class DeliveryService {
           code: 'OPERATION_CLOSED',
           message: 'O estabelecimento está com a operação fechada.',
         });
+      if (b.externalOrderId) {
+        const order = await tx.externalOrder.findFirst({
+          where: { id: b.externalOrderId, tenantId: a.tenantId, establishmentId: store.id },
+        });
+        if (!order) throw new NotFoundException('Pedido externo não encontrado nesta loja.');
+        if (order.deliveryId)
+          throw conflict('ORDER_ALREADY_CONVERTED', 'Este pedido já gerou uma entrega.');
+      }
       const quote = await tx.quote.findFirst({
         where: { id: b.quoteId, tenantId: a.tenantId, userId: a.id, establishmentId: store.id },
       });
@@ -101,6 +109,23 @@ export class DeliveryService {
           pricingSnapshot: json(snapshot),
         },
       });
+      if (b.externalOrderId) {
+        const linked = await tx.externalOrder.updateMany({
+          where: {
+            id: b.externalOrderId,
+            tenantId: a.tenantId,
+            establishmentId: store.id,
+            deliveryId: null,
+          },
+          data: { deliveryId: delivery.id },
+        });
+        if (linked.count !== 1)
+          throw conflict('ORDER_ALREADY_CONVERTED', 'Este pedido já gerou uma entrega.');
+        await audit(tx, a, 'external-order', b.externalOrderId, 'converted', {
+          deliveryId: delivery.id,
+          mode: 'demo',
+        });
+      }
       await tx.quote.update({ where: { id: quote.id }, data: { consumed: true } });
       await tx.deliveryEvent.create({
         data: {
@@ -378,6 +403,7 @@ export class DeliveriesController {
         skip: (q.page - 1) * q.pageSize,
         orderBy: q.status === 'delivered' ? { updatedAt: 'desc' } : { createdAt: 'desc' },
         include: {
+          externalOrders: { select: { provider: true, externalReference: true, mode: true } },
           establishment: { select: { id: true, name: true } },
           courier: { select: { id: true, name: true } },
         },
@@ -400,6 +426,7 @@ export class DeliveriesController {
       include: {
         establishment: { select: { id: true, name: true } },
         courier: { select: { id: true, name: true, phone: true } },
+        externalOrders: { select: { provider: true, externalReference: true, mode: true } },
         events: { orderBy: { createdAt: 'asc' } },
       },
     });

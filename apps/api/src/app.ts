@@ -1,3 +1,4 @@
+import { ExternalOrdersController } from './modules/external-orders.js';
 import { OpenRouteServiceProvider } from './modules/openrouteservice.js';
 import { SettlementController } from './modules/finance/settlement.controller.js';
 import { FinanceController } from './modules/finance/core.controller.js';
@@ -73,7 +74,10 @@ class RoutingModule {}
   exports: [PricingService],
 })
 class PricingModule {}
-@Module({ controllers: [DeliveriesController], providers: [DeliveryService] })
+@Module({
+  controllers: [DeliveriesController, ExternalOrdersController],
+  providers: [DeliveryService],
+})
 class DeliveriesModule {}
 @Module({ controllers: [DirectoryController] })
 class DirectoryModule {}

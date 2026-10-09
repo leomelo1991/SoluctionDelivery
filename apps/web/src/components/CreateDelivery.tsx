@@ -1,11 +1,19 @@
 import { useState } from 'react';
-import type { Pricing, Quote, User } from '@solution/contracts';
+import type { Pricing, Quote, User, ExternalOrder } from '@solution/contracts';
 import { dateTime, money } from '@solution/contracts';
 import { Card, Loading, Modal, Status } from '@solution/ui';
 import { Form, addressFields, takeAddress, type FormField, type Values } from './Form';
 import { useAction, useData } from '../lib/query';
 import { api, ApiError } from '../lib/api';
-export function CreateDelivery({ user, onClose }: { user: User; onClose: () => void }) {
+export function CreateDelivery({
+  user,
+  onClose,
+  externalOrder,
+}: {
+  user: User;
+  onClose: () => void;
+  externalOrder?: ExternalOrder;
+}) {
   const pricing = useData<Pricing>('/pricing');
   const [quote, setQuote] = useState<Quote | null>(null);
   const action = useAction();
@@ -77,7 +85,7 @@ export function CreateDelivery({ user, onClose }: { user: User; onClose: () => v
   ];
   async function submit(v: Values) {
     const quoteBody = {
-      establishmentId: v.establishmentId,
+      establishmentId: externalOrder?.establishmentId ?? v.establishmentId,
       destinationAddress: takeAddress(v),
       method: v.method,
       ...(v.method === 'region'
@@ -95,6 +103,7 @@ export function CreateDelivery({ user, onClose }: { user: User; onClose: () => v
         path: '/deliveries',
         body: {
           ...quoteBody,
+          ...(externalOrder ? { externalOrderId: externalOrder.id } : {}),
           quoteId: quote.id,
           recipientName: v.recipientName,
           recipientPhone: v.recipientPhone,
@@ -117,14 +126,31 @@ export function CreateDelivery({ user, onClose }: { user: User; onClose: () => v
       onClose={onClose}
     >
       <Form
-        draftKey="delivery:create"
+        draftKey={externalOrder ? `delivery:external:${externalOrder.id}` : 'delivery:create'}
+        initial={
+          externalOrder
+            ? {
+                establishmentId: externalOrder.establishmentId,
+                recipientName: externalOrder.recipientName,
+                recipientPhone: externalOrder.recipientPhone,
+                ...externalOrder.destinationAddress,
+                notes: externalOrder.notes,
+              }
+            : undefined
+        }
         clearDraftOnSubmit={quote !== null}
-        fields={fields}
+        fields={externalOrder ? fields.filter((field) => field.name !== 'establishmentId') : fields}
         onSubmit={submit}
         submitLabel={quote ? 'Confirmar e criar entrega' : 'Calcular e revisar frete'}
         busy={action.isPending}
         onDirty={() => setQuote(null)}
       >
+        {externalOrder && (
+          <p className="full">
+            Pedido demonstrativo {externalOrder.externalReference} ·{' '}
+            {externalOrder.establishment.name}. Revise o endereço de destino.
+          </p>
+        )}
         {quote && (
           <Card className="full quote">
             <Status tone="positive">Cotação pronta para confirmação</Status>
@@ -147,7 +173,7 @@ export function CreateDelivery({ user, onClose }: { user: User; onClose: () => v
             ))}
             <p className="muted">
               {quote.distanceM !== null
-                ? `${(quote.distanceM / 1000).toLocaleString('pt-BR')} km · ${quote.provider === 'manual' ? 'Informação manual' : quote.provider === 'google' ? 'Google Maps' : 'Mapbox'}`
+                ? `${(quote.distanceM / 1000).toLocaleString('pt-BR')} km · ${quote.provider === 'manual' ? 'Informação manual' : quote.provider === 'openrouteservice' ? 'openrouteservice' : quote.provider === 'google' ? 'Google Maps' : 'Mapbox'}`
                 : 'Tarifa regional · distância indisponível'}
             </p>
             {quote.durationSeconds !== null && (

@@ -60,6 +60,7 @@ model Session {
  @@index([expiresAt])
 }
 model Establishment {
+ externalOrders ExternalOrder[]
  id String @id @default(uuid()) @db.Uuid
  tenantId String @db.Uuid
  name String
@@ -101,6 +102,7 @@ model Courier {
  @@index([tenantId, approvalStatus, availabilityStatus])
 }
 model Delivery {
+ externalOrders ExternalOrder[]
  id String @id @default(uuid()) @db.Uuid
  tenantId String @db.Uuid
  code Int @default(autoincrement())
@@ -553,4 +555,23 @@ model FinancePayout {
  earning FinanceEarning @relation(fields: [tenantId, earningId], references: [tenantId, id], onDelete: Cascade)
  @@unique([tenantId, id])
  @@index([tenantId, status, createdAt])
+}
+
+model ExternalOrder {
+ id String @id @default(uuid()) @db.Uuid
+ tenantId String @db.Uuid
+ establishmentId String @db.Uuid
+ provider String
+ externalReference String
+ mode String @default("demo")
+ recipientName String
+ recipientPhone String
+ destinationAddress Json
+ notes String
+ deliveryId String? @unique @db.Uuid
+ createdAt DateTime @default(now())
+ establishment Establishment @relation(fields: [tenantId, establishmentId], references: [tenantId, id], map: "ExternalOrder_establishment_fkey")
+ delivery Delivery? @relation(fields: [tenantId, deliveryId], references: [tenantId, id], onDelete: Cascade, map: "ExternalOrder_delivery_fkey")
+ @@unique([tenantId, establishmentId, provider, externalReference], map: "ExternalOrder_source_key")
+ @@index([tenantId, establishmentId, createdAt])
 }
